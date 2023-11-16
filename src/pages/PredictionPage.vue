@@ -1,12 +1,20 @@
 <template>
   <q-page class="bg-white q-pa-sm">
     <q-card flat bordered class="q-my-sm">
-      <q-card-section horizontal>
         <q-card-section class="full-width">
           <div class="text-h6">Source Text</div>
           <q-select
             filled
-            v-model="data.source.language_id"
+            v-model="data.source_language_id"
+            :options="options"
+            emit-value
+            map-options
+            label="Language"
+            class="q-my-sm"
+          />
+        <q-select
+            filled
+            v-model="data.target_language_id"
             :options="options"
             emit-value
             map-options
@@ -14,37 +22,36 @@
             class="q-my-sm"
           />
           <q-input
-            v-model="data.source.text"
-            outlined
-            clearable
-            type="textarea"
-          />
-        </q-card-section>
-        <q-card-section  class="full-width">
-          <div class="text-h6">Target text</div>
-          <q-select
+            v-model="data.token"
+            debounce="500"
             filled
-            v-model="data.target.language_id"
-            :options="options"
-            emit-value
-            map-options
-            label="Language"
-            class="q-my-sm"
-          />
-            <q-input
-              v-model="data.target.text"
-              filled
-              readonly
-              type="textarea"
-            />
+            placeholder="Search"
+          >
+            <template v-slot:append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
         </q-card-section>
-      </q-card-section>
-
       <q-card-actions>
         <q-btn flat color="primary" @click="predict()">
           Translate!
         </q-btn>
       </q-card-actions>
+    </q-card>
+    <q-card flat bordered class="q-my-sm" v-if="translationData?.sentences">
+        <q-card-section class="full-width">
+          <div class="text-h6">Source Text</div>
+            <q-list separator>
+              <q-item v-for="(sentenceObject, sentenceObjectIndex) in translationData.sentences" :key="sentenceObjectIndex"  active-class="bg-teal-1 text-green-8">
+                <q-item-section>
+                  <div v-html="sentenceObject.source_result"></div>
+                </q-item-section>
+                <q-item-section>
+                  <div v-html="sentenceObject.target_result"></div>
+                </q-item-section>
+              </q-item>
+            </q-list>
+        </q-card-section>
     </q-card>
   </q-page>
 </template>
@@ -73,29 +80,34 @@ const options = [
 
 ]
 const data = reactive({
-  source: {
-    text: 'I love you', // 'Men bala ekende, qartanamnıñ küçük teneke sandıçığı olğanını hatırlayım. Şu mavı-zumrut renklerge boyalanğan qutuçıqnıñ üstü tıpqı balaban sandıqlarda kibi, dögme köşeçiklerinen yaraştırılğan edi.',
-    language_id: 4
-  },
-  target: {
-    text: '',
-    language_id: 5
-  }
+  token: 'you',
+  source_language_id: 4,
+  target_language_id: 5
 })
+
+const translationData = ref({})
 
 const predict = async function () {
   const translationResponse = await api.translator.predict(data)
   if (translationResponse.error) {
-    translationResponse.value = ''
+    translationData.value = {}
     return
   }
-  data.target.text = translationResponse.text
+  console.log(translationResponse)
+  translationData.value = translationResponse
 }
 
-watch(() => data.source.language_id, async (currentValue, oldValue) => {
-  if (data.source.language_id === data.target.language_id) {
-    data.target.language_id = oldValue
+watch(() => data.source_language_id, async (currentValue, oldValue) => {
+  if (data.source_language_id === data.target_language_id) {
+    data.target_language_id = oldValue
   }
 })
 
 </script>
+<style>
+
+.tagged{
+  color: red;
+}
+
+</style>
