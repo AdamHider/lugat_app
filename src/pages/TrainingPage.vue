@@ -41,41 +41,43 @@
           Analyze
         </q-btn>
         <q-btn flat color="primary" @click="feed()">
-          Feed
+          feed
         </q-btn>
       </q-card-actions>
     </q-card>
-    <q-card flat bordered class="q-my-sm" v-if="trainingAnalysis.matches">
+    <q-card flat bordered class="q-my-sm" v-if="tokens.source && tokens.target">
       <q-card-section horizontal>
         <q-card-section class="full-width">
           <div class="text-h6">Source Text</div>
-          <div v-if="trainingAnalysis?.tokens[data.source.language_id]">
+          <div v-if="tokens.source">
             <q-chip
-              v-for="(sourceToken, sourceTokenIndex) in trainingAnalysis?.tokens[data.source.language_id]" :key="sourceTokenIndex"
+              v-for="(sourceToken, sourceTokenIndex) in tokens.source" :key="sourceTokenIndex"
               clickable
-              @click="(activeMatchGroup === null) ? setActiveGroup(sourceTokenIndex, data.source.language_id) : relate(sourceTokenIndex, data.source.language_id)"
-              :color="(trainingAnalysis.matches[activeMatchGroup]?.[data.source.language_id].neurons?.find(group => group.index === sourceTokenIndex)) ? 'primary' : 'transparent'"
-              :text-color="(trainingAnalysis.matches[activeMatchGroup]?.[data.source.language_id].neurons?.find(group => group.index === sourceTokenIndex)) ? 'white' : ''"
+              @click="(activeMatchGroup === null) ? setActiveGroup(sourceToken.token_id, data.source.language_id) : relate(sourceToken.token_id, data.source.language_id)"
+              :color="(trainingAnalysis.matches[activeMatchGroup]?.[data.source.language_id].neurons?.find(group => group?.token_id == sourceToken.token_id)) ? 'primary' : 'transparent'"
+              :text-color="(trainingAnalysis.matches[activeMatchGroup]?.[data.source.language_id].neurons?.find(group => group?.token_id == sourceToken.token_id)) ? 'white' : ''"
             >
-              {{ sourceToken }}
+              {{ sourceToken.token }}
             </q-chip>
           </div>
         </q-card-section>
         <q-card-section  class="full-width">
           <div class="text-h6">Target text</div>
-            <div v-if="trainingAnalysis?.tokens[data.target.language_id]">
+            <div v-if="tokens.target">
               <q-chip
-                v-for="(targetSentenceToken, targetTokenIndex) in trainingAnalysis?.tokens[data.target.language_id]" :key="targetTokenIndex"
+                v-for="(targetToken, targetTokenIndex) in tokens.target" :key="targetTokenIndex"
                 clickable
-                @click="(activeMatchGroup === null) ? setActiveGroup(targetTokenIndex, data.target.language_id) : relate(targetTokenIndex, data.target.language_id)"
-                :color="(trainingAnalysis.matches[activeMatchGroup]?.[data.target.language_id].neurons?.find(group => group.index === targetTokenIndex)) ? 'primary' : 'transparent'"
-                :text-color="(trainingAnalysis.matches[activeMatchGroup]?.[data.target.language_id].neurons?.find(group => group.index === targetTokenIndex)) ? 'white' : ''"
+                @click="(activeMatchGroup === null) ? setActiveGroup(targetSentenceToken.token_id, data.target.language_id) : relate(targetSentenceToken.token_id, data.target.language_id)"
+                :color="(trainingAnalysis.matches[activeMatchGroup]?.[data.target.language_id].neurons?.find(group => group.token_id == targetSentenceToken.token_id)) ? 'primary' : 'transparent'"
+                :text-color="(trainingAnalysis.matches[activeMatchGroup]?.[data.target.language_id].neurons?.find(group => group.token_id == targetSentenceToken.token_id)) ? 'white' : ''"
               >
-                {{ targetSentenceToken }}
+                {{ targetSentenceToken.token }}
               </q-chip>
             </div>
         </q-card-section>
       </q-card-section>
+    </q-card>
+    <q-card flat bordered class="q-my-sm" v-if="tokenRelations.length > 0">
       <q-card-section v-if="activeMatchGroup != null" >
         <q-btn :disable="!activeMatchGroupIsCompleted" class="full-width" icon="done" color="positive" label="Confirm" @click="activeMatchGroup = null"  />
       </q-card-section>
@@ -91,7 +93,7 @@
                   :color="(activeMatchGroup == matchIndex) ? 'primary' : ''"
                   :text-color="(activeMatchGroup == matchIndex) ? 'white' : ''"
                 >
-                  {{neuron.core}}
+                  {{neuron.token}}
                 </q-chip>
               </div>
               <div>
@@ -148,7 +150,7 @@ const data = ref({
   source: {
     id: 0,
     text: 'Şimdi bunı yapam', // 'Men bala ekende, qartanamnıñ küçük teneke sandıçığı olğanını hatırlayım. Şu mavı-zumrut renklerge boyalanğan qutuçıqnıñ üstü tıpqı balaban sandıqlarda kibi, dögme köşeçiklerinen yaraştırılğan edi.',
-    language_id: 4
+    language_id: 1
   },
   target: {
     id: 0,
@@ -157,8 +159,11 @@ const data = ref({
   }
 })
 const trainingAnalysis = ref({})
+const tokens = ref({})
+const tokenRelations = ref({})
 const activeMatchGroup = ref(null)
 const activeMatchGroupIsCompleted = ref(false)
+
 
 const loadData = async function () {
   const sentencePairResponse = await api.sentence.getPair({ source_language_id: data.value.source.language_id, target_language_id: data.value.target.language_id })
@@ -172,31 +177,48 @@ const loadData = async function () {
   data.value.target.text = sentencePairResponse.target_text
 }
 
-const analyze = async function () {
-  const trainingAnalysisResponse = await api.translator.analyze(data.value)
+const analyze = function () {
+  getTokens()
+  getTokenRelations()
+}
+
+const feed = async function () {
+  const resp = await api.translator.feed({})
   if (trainingAnalysisResponse.error) {
-    trainingAnalysis.value = {}
     return
   }
-  trainingAnalysis.value = trainingAnalysisResponse
 }
-const feed = async function () {
-  const feedResponse = await api.translator.feed(1)
+
+const getTokens = async function () {
+  const tokenResponse = await api.token.getList({ source: data.value.source, target: data.value.target })
+  if (tokenResponse.error) {
+    tokens.value = {}
+    return
+  }
+  tokens.value = tokenResponse
 }
-const relate = function (tokenIndex, languageId) {
-  if (tokenIndex === null || activeMatchGroup.value == null) return
-  if (trainingAnalysis.value.matches[activeMatchGroup.value][languageId].neurons.find(group => group.index === tokenIndex) === undefined) {
+const getTokenRelations = async function () {
+  const tokenRelationResponse = await api.tokenRelation.getList({ source: data.value.source, target: data.value.target })
+  if (tokenRelationResponse.error) {
+    tokenRelations.value = {}
+    return
+  }
+  tokenRelations.value = tokenRelationResponse
+}
+
+
+
+
+const relate = function (tokenId, languageId) {
+  if (tokenId === null || activeMatchGroup.value == null) return
+  if (trainingAnalysis.value.matches[activeMatchGroup.value][languageId].neurons.find(group => group.token_id == tokenId) === undefined) {
     // ADD MATCHED
-    trainingAnalysis.value.matches[activeMatchGroup.value][languageId].neurons.push({
-      core: trainingAnalysis.value.tokens[languageId][tokenIndex],
-      position: null,
-      index: tokenIndex
-    })
+    trainingAnalysis.value.matches[activeMatchGroup.value][languageId].neurons.push(trainingAnalysis.value.tokens[languageId].find(token => token.token_id*1 == tokenId))
   } else {
     // REMOVE MATCHED
     const matches = []
     for (const i in trainingAnalysis.value.matches[activeMatchGroup.value][languageId].neurons) {
-      if (trainingAnalysis.value.matches[activeMatchGroup.value][languageId].neurons[i].index !== tokenIndex) {
+      if (trainingAnalysis.value.matches[activeMatchGroup.value][languageId].neurons[i].token_id != tokenId) {
         matches.push(trainingAnalysis.value.matches[activeMatchGroup.value][languageId].neurons[i])
       }
     }
@@ -209,17 +231,18 @@ const relate = function (tokenIndex, languageId) {
     activeMatchGroupIsCompleted.value = false
   }
 }
-const setActiveGroup = function (tokenIndex, languageId) {
-  if (tokenIndex === null || activeMatchGroup.value !== null) return
+const setActiveGroup = function (tokenId, languageId) {
+  console.log(tokenId)
+  if (tokenId === null || activeMatchGroup.value !== null) return
   for (const i in trainingAnalysis.value.matches) {
-    if (trainingAnalysis.value.matches[i][languageId].neurons.find(neuron => neuron.index === tokenIndex)) {
+    if (trainingAnalysis.value.matches[i][languageId].neurons.find(neuron => neuron.token_id == tokenId)) {
       activeMatchGroup.value = i
       return
     }
   }
   if (!activeMatchGroup.value) {
     activeMatchGroup.value = createGroup() - 1
-    relate(tokenIndex, languageId)
+    relate(tokenId, languageId)
   }
 }
 
@@ -257,7 +280,7 @@ watch(() => data.value.source.language_id, async (currentValue, oldValue) => {
 })
 onMounted(async () => {
   // get initial data from server (1st page)
-  // await loadData()
+  await loadData()
 })
 
 </script>

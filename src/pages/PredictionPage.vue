@@ -33,10 +33,18 @@
           </q-input>
         </q-card-section>
       <q-card-actions>
-        <q-btn flat color="primary" @click="predict()">
+        <q-btn flat color="primary" @click="getTranslations()">
           Translate!
         </q-btn>
       </q-card-actions>
+    </q-card>
+    <q-card flat bordered class="q-my-sm"  v-if="translations?.length > 0">
+        <q-card-section class="full-width">
+          <div class="text-h6">Translations</div>
+          <q-chip v-for="(translation, translationIndex) in translations" :key="translationIndex" >
+            {{translation.core}}
+          </q-chip>
+        </q-card-section>
     </q-card>
     <q-card flat bordered class="q-my-sm" v-if="translationData?.sentences">
         <q-card-section class="full-width">
@@ -80,12 +88,13 @@ const options = [
 
 ]
 const data = reactive({
-  token: 'you',
-  source_language_id: 4,
-  target_language_id: 5
+  token: 'estoy',
+  source_language_id: 2,
+  target_language_id: 1
 })
 
 const translationData = ref({})
+const translations = ref([])
 
 const predict = async function () {
   const translationResponse = await api.translator.predict(data)
@@ -93,8 +102,16 @@ const predict = async function () {
     translationData.value = {}
     return
   }
-  console.log(translationResponse)
   translationData.value = translationResponse
+}
+
+const getTranslations = async function () {
+  const translationListResponse = await api.translator.getTranslations(data)
+  if (translationListResponse.error) {
+    translations.value = []
+    return
+  }
+  translations.value = translationListResponse
 }
 
 watch(() => data.source_language_id, async (currentValue, oldValue) => {
