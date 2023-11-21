@@ -61,9 +61,6 @@ export class Api extends ApiService{
         getTranslations: (params) => {
             return this.post('translator', 'getTranslations', params)
         },
-        feed: (params) => {
-            return this.post('translator', 'feed', params)
-        },
     }
     sentence = {
         getPair: (params) => {
@@ -72,16 +69,25 @@ export class Api extends ApiService{
         setTrained: (params) => {
             return this.post('sentence', 'setTrained', params)
         },
+        feed: (params) => {
+            return this.post('sentence', 'feed', params)
+        },
     }
     token = {
         getList: (params) => {
             return this.post('token', 'getList', params)
         },
+        predictList: (params) => {
+            return this.post('token', 'predictList', params)
+        }
     }
     tokenRelation = {
         getList: (params) => {
             return this.post('tokenRelation', 'getList', params)
         },
+        saveList: (params) => {
+          return this.post('tokenRelation', 'saveList', params)
+        }
     }
 
 }
