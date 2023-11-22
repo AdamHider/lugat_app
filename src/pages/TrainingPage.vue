@@ -44,38 +44,45 @@
     </q-card>
     <q-card flat bordered class="q-my-sm" v-if="tokens">
       <q-card-section horizontal>
-        <q-card-section class="full-width" v-for="(language, langIndex) in tokens" :key="langIndex">
+        <q-card-section bordered class="full-width" v-for="(language, langId) in tokens" :key="langId">
           <div class="text-h6">Source Text</div>
           <div>
             <q-chip
               v-for="(token, tokenIndex) in language" :key="tokenIndex"
               clickable
-              @click="(activeGroup === null) ? setActiveGroup(token.id, langIndex) : relate(token.id, langIndex)"
-              :color="checkChipColor(token.id, langIndex).color"
-              :text-color="checkChipColor(token.id, langIndex).text"
+              :outline="!activeGroup || (activeGroup  && tokenRelations[activeGroup][langId].find(relation => relation.token_id == token.id) === null)"
+              @mouseover="mouseover(token)"
+              @click="(activeGroup === null) ? setActiveGroup(token.id, langId) : relate(token.id, langId)"
+              :text-color="(activeGroup && tokenRelations.length > 0 && tokenRelations[activeGroup][langId].find(relation => relation.token_id == token.id) == true) ? tokenColors[token.id] : 'white'"
+              :color="tokenColors[token.id] || 'black'"
             >
-              {{ token.word }}
+              <b>{{ token.word }}</b>
+              <q-badge color="red" floating rounded>
+                  4
+              </q-badge>
             </q-chip>
           </div>
         </q-card-section>
       </q-card-section>
     </q-card>
     <q-card flat bordered class="q-my-sm" v-if="tokenRelations">
-      <q-card-section v-if="activeGroup != null" >
-        <q-btn :disable="!activeGroupIsCompleted" class="full-width" icon="done" color="positive" label="Confirm" @click="activeGroup = null"  />
-      </q-card-section>
       <q-card-section>
         <q-list separator>
           <q-item v-for="(languages, relationIndex) in tokenRelations" :key="relationIndex"
+            v-show="!tokenRelationsHidden[relationIndex]"
             :active="activeGroup == relationIndex"
             active-class="bg-teal-1 text-green-8">
+            <q-item-section avatar >
+              <q-avatar icon="fiber_manual_record" :text-color="tokenRelationsColors[relationIndex]" />
+            </q-item-section>
             <q-item-section v-for="(tokens, langIndex) in languages" :key="langIndex">
               <div>
                 <q-chip  v-for="(token, tokenIndex) in tokens" :key="tokenIndex"
-                  :color="(activeGroup == relationIndex) ? 'primary' : ''"
-                  :text-color="(activeGroup == relationIndex) ? 'white' : ''"
+                  :outline="(activeGroup != relationIndex)"
+                  :color="tokenRelationsColors[relationIndex]"
+                  :text-color="(activeGroup != relationIndex) ? tokenRelationsColors[relationIndex] : 'white'"
                 >
-                  {{token.word}}
+                  <b>{{token.word}}</b>
                 </q-chip>
               </div>
             </q-item-section>
@@ -88,7 +95,7 @@
             </q-item-section>
           </q-item>
         </q-list>
-        <q-btn flat color="primary" @click="createGroup()">
+        <q-btn class="full-width" flat color="primary" @click="createGroup()" icon="add">
           New group
         </q-btn>
       </q-card-section>
@@ -134,6 +141,27 @@ const tokenRelations = ref([])
 const activeGroup = ref(null)
 const activeGroupIsCompleted = ref(false)
 
+const colors = ref([
+  'red-7',
+  'pink-7',
+  'purple-7',
+  'deep-purple-7',
+  'indigo-7',
+  'light-blue-7',
+  'cyan-7',
+  'teal-10',
+  'green-7',
+  'light-green-7',
+  'lime-7',
+  'yellow-9',
+  'orange-7',
+  'deep-orange-7',
+  'brown-7',
+])
+const tokenRelationsColors = ref({})
+const tokenRelationsHidden = ref({})
+const tokenColors = ref({})
+
 
 const loadData = async function () {
   const sentencePairResponse = await api.sentence.getPair({ source_language_id: data.value.source.language_id, target_language_id: data.value.target.language_id })
@@ -151,7 +179,12 @@ const loadData = async function () {
 const analyze = async function () {
   await getTokens()
   await getTokenRelations()
+  colorizeRelations()
 }
+const mouseover = function (token) {
+  console.log(token)
+}
+
 
 const feed = async function () {
   const resp = await api.sentence.feed({})
@@ -201,6 +234,7 @@ const relate = function (tokenId, langId) {
     var token = tokens.value[langId].find(token => token.id == tokenId)
     token.token_id = token.id
     tokenRelations.value[activeGroup.value][langId].push(token)
+    tokenRelations.value[activeGroup.value][langId].sort((a, b) => parseFloat(a.index) - parseFloat(b.index));
   } else {
     // REMOVE MATCHED
     const matches = []
@@ -217,21 +251,40 @@ const relate = function (tokenId, langId) {
   } else {
     activeGroupIsCompleted.value = false
   }
+  colorizeRelations()
 }
 const setActiveGroup = function (tokenId, langId) {
-
   if (tokenId === null || activeGroup.value !== null) return
+  var activeGroupsCount = 0
   for (const i in tokenRelations.value) {
     if (tokenRelations.value[i][langId]?.find(relation => relation.token_id == tokenId)) {
       activeGroup.value = i
-      return
     }
   }
   if (!activeGroup.value) {
     activeGroup.value = createGroup(langId)
     relate(tokenId, langId)
   }
+  colorizeRelations()
 }
+
+const filterGroups = function (tokenId, langId) {
+  if (tokenId === null || activeGroup.value !== null) return
+  for (const i in tokenRelations.value) {
+    if (tokenRelations.value[i][langId]?.find(relation => relation.token_id == tokenId)) {
+      tokenRelationsHidden.value[i] = false
+    } else {
+      tokenRelationsHidden.value[i] = true
+    }
+  }
+}
+const showAllGroups = function (tokenId) {
+  for (const i in tokenRelations.value) {
+    tokenRelationsHidden.value[i] = false
+  }
+}
+
+
 
 const deleteGroup = function (groupIndex) {
   let groups = []
@@ -240,6 +293,7 @@ const deleteGroup = function (groupIndex) {
       groups.push(tokenRelations.value[i])
     }
   }
+  colorizeTokes(groupIndex, 'black')
   if(groups.length == 0) activeGroup.value = null
   tokenRelations.value = groups
 }
@@ -250,6 +304,7 @@ const createGroup = function (langId) {
   tokenRelations.value[lastKey] = {}
   tokenRelations.value[lastKey][data.value.source.language_id] = []
   tokenRelations.value[lastKey][data.value.target.language_id] = []
+  colorizeRelations()
   return lastKey
 }
 
@@ -260,17 +315,35 @@ const groupBy = function(xs, key) {
   }, {});
 }
 
-const checkChipColor = function(tokenId, langIndex){
-  var result = {
-    color: 'transparent',
-    text: 'black'
+const colorizeRelations = function(){
+  for(var index in tokenRelations.value){
+    if(!tokenRelationsColors.value[index]){
+      var colorIndex = Math.floor(Math.random() * colors.value.length)
+      var color = colors.value[colorIndex]
+      colors.value.splice(colorIndex, 1);
+    } else {
+      var color = tokenRelationsColors.value[index]
+    }
+    tokenRelationsColors.value[index] = color
+    colorizeTokes(index, color)
   }
-  if (activeGroup.value && tokenRelations.value[activeGroup.value][langIndex]?.find(relation => relation?.token_id == tokenId)){
-    result.color = 'primary'
-    result.text = 'white'
-  }
-  return result
 }
+const colorizeTokes = function(groupId, color){
+  console.log(color)
+  for(var langId in tokenRelations.value[groupId]){
+    for(var k in tokens.value[langId]){
+      let token = tokens.value[langId][k]
+      if(tokenRelations.value[groupId][langId]?.find(t => token?.id == t.id)){
+        tokenColors.value[token.id] = color
+      }
+    }
+  }
+}
+
+
+
+
+
 
 watch(() => data.value.source.language_id, async (currentValue, oldValue) => {
   if (data.value.source.language_id === data.value.target.language_id) {
