@@ -1,112 +1,93 @@
 <template>
   <q-page class="bg-white q-pa-sm">
-    <q-card flat bordered class="q-my-sm">
-      <q-card-section horizontal>
-        <q-card-section class="full-width">
-          <div class="text-h6">Source Text</div>
-          <q-select
-            filled
-            v-model="data.source.language_id"
-            :options="options"
-            emit-value
-            map-options
-            label="Language"
-          />
-          <q-input
-            v-model="data.source.text"
-            outlined
-            type="textarea"
-          />
-        </q-card-section>
-        <q-card-section  class="full-width">
-          <div class="text-h6">Target text</div>
-          <q-select
-            filled
-            v-model="data.target.language_id"
-            :options="options"
-            label="Language"
-            emit-value
-            map-options
-          />
-            <q-input
-              v-model="data.target.text"
-              outlined
-              type="textarea"
-            />
-        </q-card-section>
-      </q-card-section>
-
-      <q-card-actions>
+    <q-card flat bordered class="q-my-sm" v-if="tokenRelations">
+      <q-card-actions align="right">
+        <q-btn flat color="primary" @click="loadData()">
+          Reload
+        </q-btn>
         <q-btn flat color="primary" @click="feed()">
-          feed
+          Reset All
+        </q-btn>
+        <q-btn flat color="primary" @click="train()" :disable="tokenRelations.length === 0">
+          Reset
+        </q-btn>
+        <q-btn  color="primary" @click="train()" icon="check" :disable="tokenRelations.length === 0">
+          Save
         </q-btn>
       </q-card-actions>
     </q-card>
-    <q-card flat bordered class="q-my-sm" v-if="tokens">
-      <q-card-section horizontal>
-        <q-card-section bordered class="full-width" v-for="(language, langId) in tokens" :key="langId">
-          <div class="text-h6">Source Text</div>
-          <div>
-            <q-chip
-              v-for="(token, tokenIndex) in language" :key="tokenIndex"
-              clickable
-              :outline="!activeGroup || (activeGroup  && tokenRelations[activeGroup][langId].find(relation => relation.token_id == token.id) === null)"
-              @mouseover="mouseover(token)"
-              @click="(activeGroup === null) ? setActiveGroup(token.id, langId) : relate(token.id, langId)"
-              :text-color="(activeGroup && tokenRelations.length > 0 && tokenRelations[activeGroup][langId].find(relation => relation.token_id == token.id) == true) ? tokenColors[token.id] : 'white'"
-              :color="tokenColors[token.id] || 'black'"
-            >
-              <b>{{ token.word }}</b>
-              <q-badge color="red" floating rounded>
-                  4
-              </q-badge>
-            </q-chip>
-          </div>
+    <q-card flat bordered class="q-my-sm">
+      <q-card-section>
+        <q-card-section horizontal>
+          <q-card-section class="full-width">
+            <div class="text-caption">Source text</div>
+            <div class="text-h6">{{ data.source.text }}</div>
+          </q-card-section>
+          <q-card-section  class="full-width">
+            <div class="text-caption">Target text</div>
+            <div class="text-h6">{{ data.target.text }}</div>
+          </q-card-section>
         </q-card-section>
       </q-card-section>
-    </q-card>
-    <q-card flat bordered class="q-my-sm" v-if="tokenRelations">
-      <q-card-section>
-        <q-list separator>
-          <q-item v-for="(languages, relationIndex) in tokenRelations" :key="relationIndex"
-            v-show="!tokenRelationsHidden[relationIndex]"
-            :active="activeGroup == relationIndex"
-            active-class="bg-teal-1 text-green-8">
-            <q-item-section avatar >
-              <q-avatar icon="fiber_manual_record" :text-color="tokenRelationsColors[relationIndex]" />
-            </q-item-section>
-            <q-item-section v-for="(tokens, langIndex) in languages" :key="langIndex">
-              <div>
-                <q-chip  v-for="(token, tokenIndex) in tokens" :key="tokenIndex"
-                  :outline="(activeGroup != relationIndex)"
-                  :color="tokenRelationsColors[relationIndex]"
-                  :text-color="(activeGroup != relationIndex) ? tokenRelationsColors[relationIndex] : 'white'"
-                >
-                  <b>{{token.word}}</b>
-                </q-chip>
-              </div>
-            </q-item-section>
-            <q-item-section side>
-              <div class="q-gutter-sm" >
-                <q-btn v-if="activeGroup != relationIndex" flat round icon="edit" @click="activeGroup = relationIndex"  />
-                <q-btn v-if="activeGroup == relationIndex" flat round color="positive" icon="done" @click="activeGroup = null" />
-                <q-btn flat  round color="negative" icon="delete_outline" @click="deleteGroup(relationIndex)" />
-              </div>
-            </q-item-section>
-          </q-item>
-        </q-list>
+      <q-separator />
+      <q-card-section  v-if="tokens">
+        <q-card-section horizontal>
+          <q-card-section bordered class="full-width" v-for="(language, langId) in tokens" :key="langId">
+              <q-chip
+                v-for="(token, tokenIndex) in language" :key="tokenIndex"
+                clickable
+                @mouseover="lightUpGroup(token.id, langId)"
+                @mouseout="tokenRelationsHighlighted={}"
+                @click="(activeGroup === null) ? setActiveGroup(token.id, langId) : relate(token.id, langId)"
+                :text-color="(activeGroup !== null && tokenRelations[activeGroup][langId]?.find(t => token?.id == t.token_id) ) ? 'white' : 'gray-7'"
+                :color="(activeGroup !== null && tokenRelations[activeGroup][langId]?.find(t => token?.id == t.token_id) ) ? tokenRelationsColors[activeGroup] : 'transparent'"
+              >
+                <b>{{ token.word }}</b>
+                <q-badge v-if="tokenCount[token.id]" floating rounded color="red" :label="tokenCount[token.id]" />
+              </q-chip>
+          </q-card-section>
+        </q-card-section>
+      </q-card-section>
+      <q-separator  />
+      <q-card-section v-if="tokenRelations">
+        <q-card-section  class="q-pa-none">
+          <q-list separator>
+            <q-item v-for="(languages, relationIndex) in tokenRelations" :key="relationIndex"
+              v-show="!tokenRelationsHidden[relationIndex]"
+              :active="activeGroup == relationIndex"
+              :class="(tokenRelationsHighlighted[relationIndex]) ? `bg-${tokenRelationsHighlighted[relationIndex]}` : ''"
+              active-class="bg-teal-1 text-green-8">
+              <q-item-section avatar >
+                <q-avatar icon="fiber_manual_record" :text-color="tokenRelationsColors[relationIndex]" />
+              </q-item-section>
+              <q-item-section v-for="(tokens, langIndex) in languages" :key="langIndex">
+                <div>
+                  <q-chip  v-for="(token, tokenIndex) in tokens" :key="tokenIndex"
+                    :outline="(activeGroup != relationIndex)"
+                    :color="tokenRelationsColors[relationIndex]"
+                    :text-color="(activeGroup != relationIndex) ? tokenRelationsColors[relationIndex] : 'white'"
+                  >
+                    <b>{{token.word}}</b>
+                  </q-chip>
+                </div>
+              </q-item-section>
+              <q-item-section side>
+                <div class="q-gutter-sm" >
+                  <q-btn v-if="activeGroup != relationIndex" flat round icon="edit" @click="activeGroup = relationIndex"  />
+                  <q-btn v-if="activeGroup == relationIndex" flat round color="positive" icon="done" @click="activeGroup = null" />
+                  <q-btn flat  round color="negative" icon="delete_outline" @click="deleteGroup(relationIndex)" />
+                </div>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-card-section>
+      </q-card-section>
+      <q-card-actions>
         <q-btn class="full-width" flat color="primary" @click="createGroup()" icon="add">
           New group
         </q-btn>
-      </q-card-section>
-
-      <q-card-actions>
-        <q-btn flat color="primary" @click="train()">
-          Train
-        </q-btn>
       </q-card-actions>
     </q-card>
-
   </q-page>
 </template>
 
@@ -160,7 +141,8 @@ const colors = ref([
 ])
 const tokenRelationsColors = ref({})
 const tokenRelationsHidden = ref({})
-const tokenColors = ref({})
+const tokenRelationsHighlighted = ref({})
+const tokenCount = ref({})
 
 
 const loadData = async function () {
@@ -179,12 +161,7 @@ const loadData = async function () {
 const analyze = async function () {
   await getTokens()
   await getTokenRelations()
-  colorizeRelations()
 }
-const mouseover = function (token) {
-  console.log(token)
-}
-
 
 const feed = async function () {
   const resp = await api.sentence.feed({})
@@ -205,7 +182,7 @@ const getTokens = async function () {
 const getTokenRelations = async function () {
   const tokenRelationResponse = await api.token.predictList({ source: data.value.source, target: data.value.target })
   if (tokenRelationResponse.error) {
-    tokenRelations.value = {}
+    tokenRelations.value = []
     return
   }
   let tokenRelationList = tokenRelationResponse
@@ -235,6 +212,7 @@ const relate = function (tokenId, langId) {
     token.token_id = token.id
     tokenRelations.value[activeGroup.value][langId].push(token)
     tokenRelations.value[activeGroup.value][langId].sort((a, b) => parseFloat(a.index) - parseFloat(b.index));
+    tokenCount.value[tokenId]++
   } else {
     // REMOVE MATCHED
     const matches = []
@@ -244,6 +222,7 @@ const relate = function (tokenId, langId) {
       }
     }
     tokenRelations.value[activeGroup.value][langId] = matches
+    tokenCount.value[tokenId]--
   }
   if (tokenRelations.value[activeGroup.value][langId].length > 0 &&
     tokenRelations.value[activeGroup.value][langId].length > 0) {
@@ -251,11 +230,9 @@ const relate = function (tokenId, langId) {
   } else {
     activeGroupIsCompleted.value = false
   }
-  colorizeRelations()
 }
 const setActiveGroup = function (tokenId, langId) {
   if (tokenId === null || activeGroup.value !== null) return
-  var activeGroupsCount = 0
   for (const i in tokenRelations.value) {
     if (tokenRelations.value[i][langId]?.find(relation => relation.token_id == tokenId)) {
       activeGroup.value = i
@@ -265,37 +242,22 @@ const setActiveGroup = function (tokenId, langId) {
     activeGroup.value = createGroup(langId)
     relate(tokenId, langId)
   }
-  colorizeRelations()
 }
-
-const filterGroups = function (tokenId, langId) {
-  if (tokenId === null || activeGroup.value !== null) return
-  for (const i in tokenRelations.value) {
-    if (tokenRelations.value[i][langId]?.find(relation => relation.token_id == tokenId)) {
-      tokenRelationsHidden.value[i] = false
-    } else {
-      tokenRelationsHidden.value[i] = true
-    }
-  }
-}
-const showAllGroups = function (tokenId) {
-  for (const i in tokenRelations.value) {
-    tokenRelationsHidden.value[i] = false
-  }
-}
-
 
 
 const deleteGroup = function (groupIndex) {
   let groups = []
+  let colors = []
   for (const i in tokenRelations.value) {
     if (groupIndex != i) {
       groups.push(tokenRelations.value[i])
+      colors.push(tokenRelationsColors.value[i])
     }
   }
-  colorizeTokes(groupIndex, 'black')
-  if(groups.length == 0) activeGroup.value = null
+  activeGroup.value = null
   tokenRelations.value = groups
+  tokenRelationsColors.value = colors
+
 }
 const createGroup = function (langId) {
   var keys = Object.keys(tokenRelations.value);
@@ -304,7 +266,7 @@ const createGroup = function (langId) {
   tokenRelations.value[lastKey] = {}
   tokenRelations.value[lastKey][data.value.source.language_id] = []
   tokenRelations.value[lastKey][data.value.target.language_id] = []
-  colorizeRelations()
+  activeGroup.value = lastKey
   return lastKey
 }
 
@@ -318,23 +280,40 @@ const groupBy = function(xs, key) {
 const colorizeRelations = function(){
   for(var index in tokenRelations.value){
     if(!tokenRelationsColors.value[index]){
-      var colorIndex = Math.floor(Math.random() * colors.value.length)
+      let colorIndex = Math.floor(Math.random() * colors.value.length)
       var color = colors.value[colorIndex]
       colors.value.splice(colorIndex, 1);
     } else {
       var color = tokenRelationsColors.value[index]
     }
     tokenRelationsColors.value[index] = color
-    colorizeTokes(index, color)
   }
 }
-const colorizeTokes = function(groupId, color){
-  console.log(color)
-  for(var langId in tokenRelations.value[groupId]){
-    for(var k in tokens.value[langId]){
-      let token = tokens.value[langId][k]
-      if(tokenRelations.value[groupId][langId]?.find(t => token?.id == t.id)){
-        tokenColors.value[token.id] = color
+
+const lightUpGroup = function (tokenId, langId) {
+  tokenRelationsHighlighted.value = {}
+  for (const i in tokenRelations.value) {
+    if (tokenRelations.value[i][langId]?.find(relation => relation.token_id == tokenId)) {
+      var colorChunks = tokenRelationsColors.value[i].split('-')
+      colorChunks.pop()
+      tokenRelationsHighlighted.value[i] = colorChunks.join('-')+'-1'
+    } else {
+      tokenRelationsHighlighted.value[i] = false
+    }
+  }
+}
+const countTokens = function () {
+  tokenCount.value = {}
+  for (const t in tokenRelations.value) {
+    for (const langId in tokenRelations.value[t]) {
+      var group = tokenRelations.value[t][langId]
+      for (const i in tokens.value[langId]) {
+        var token = tokens.value[langId][i]
+        if(!tokenCount.value[token.id] ) tokenCount.value[token.id] = 0
+        if (group?.find(relation => relation.token_id === token.id)) {
+          console.log(token.id)
+          tokenCount.value[token.id] = tokenCount.value[token.id]+1
+        }
       }
     }
   }
@@ -343,7 +322,10 @@ const colorizeTokes = function(groupId, color){
 
 
 
-
+watch(() => tokenRelations.value, async (currentValue, oldValue) => {
+  colorizeRelations()
+  countTokens()
+}, { deep: true })
 
 watch(() => data.value.source.language_id, async (currentValue, oldValue) => {
   if (data.value.source.language_id === data.value.target.language_id) {
@@ -356,3 +338,13 @@ onMounted(async () => {
 })
 
 </script>
+
+<style scoped>
+.q-badge{
+  top: -10px;
+  right: -8px;
+}
+.highlighted{
+  background-color: black;
+}
+</style>

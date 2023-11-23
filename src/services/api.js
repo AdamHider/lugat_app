@@ -66,6 +66,9 @@ export class Api extends ApiService{
         getPair: (params) => {
             return this.post('sentence', 'getPair', params)
         },
+        getPairList: (params) => {
+            return this.post('sentence', 'getPairList', params)
+        },
         setTrained: (params) => {
             return this.post('sentence', 'setTrained', params)
         },
@@ -88,6 +91,11 @@ export class Api extends ApiService{
         saveList: (params) => {
           return this.post('tokenRelation', 'saveList', params)
         }
+    }
+    word = {
+      getTranslations: (params) => {
+          return this.post('word', 'getTranslations', params)
+      },
     }
 
 }
