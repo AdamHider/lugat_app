@@ -97,5 +97,43 @@ export class Api extends ApiService{
           return this.post('word', 'getTranslations', params)
       },
     }
+    book = {
+        getItem: (params) => {
+            return this.post('book', 'getItem', params)
+        },
+        getList: (params) => {
+            return this.post('book', 'getList', params)
+        },
+        createItem: (params) => {
+            return this.post('book', 'createItem', params)
+        },
+    }
+    chapter = {
+        getItem: (params) => {
+            return this.post('chapter', 'getItem', params)
+        },
+        getList: (params) => {
+            return this.post('chapter', 'getList', params)
+        },
+        createItem: (params) => {
+            return this.post('chapter', 'createItem', params)
+        }
+    }
+    text = {
+        getItem: (params) => {
+            return this.post('text', 'getItem', params)
+        },
+        getList: (params) => {
+            return this.post('text', 'getList', params)
+        },
+        saveItem: (params) => {
+            return this.post('text', 'saveItem', params)
+        },
+        exportItem: (params) => {
+            return this.post('text', 'exportItem', params)
+        },
+
+
+    }
 
 }

@@ -55,16 +55,22 @@ const pageTitle = ref(route.meta.pageTitle)
 
 const menuList = [
 {
+  icon: 'error',
+  label: 'Prediction',
+  link: 'prediction',
+  separator: true
+},
+{
   icon: 'notes',
   label: 'Training',
   link: 'training',
   separator: false
 },
 {
-  icon: 'error',
-  label: 'Prediction',
-  link: 'prediction',
-  separator: true
+  icon: 'menu_book',
+  label: 'Books',
+  link: 'books',
+  separator: false
 }
 ]
 watch(route, (currentValue, oldValue) => {

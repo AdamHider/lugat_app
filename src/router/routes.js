@@ -15,6 +15,21 @@ const routes = [
         component: () => import('pages/PredictionPage.vue'),
         meta: { pageTitle: 'Prediction' }
       },
+      {
+        path: 'books',
+        component: () => import('pages/BooksPage.vue'),
+        meta: { pageTitle: 'Books' }
+      },
+      {
+        path: 'book-:book_id',
+        component: () => import('pages/BookPage.vue'),
+        meta: { pageTitle: 'Book' }
+      },
+      {
+        path: 'chapter-:chapter_id',
+        component: () => import('pages/ChapterPage.vue'),
+        meta: { pageTitle: 'Chapter' }
+      }
     ]
   },
 
