@@ -104,8 +104,8 @@ export class Api extends ApiService{
         getList: (params) => {
             return this.post('book', 'getList', params)
         },
-        createItem: (params) => {
-            return this.post('book', 'createItem', params)
+        saveItem: (params) => {
+            return this.post('book', 'saveItem', params)
         },
     }
     chapter = {
@@ -134,6 +134,11 @@ export class Api extends ApiService{
         },
 
 
+    }
+    uploader = {
+        upload: (params) =>  {
+          return this.post('uploader', 'uploadItem', params)
+        }
     }
 
 }

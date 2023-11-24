@@ -1,8 +1,4 @@
 <template>
-  <q-page class="bg-white q-pa-sm">
-    <q-dialog v-model="textModal"
-      persistent
-      maximized>
         <q-card class="my-card">
           <q-bar>
             <q-btn flat icon="save" @click="saveTexts()">
@@ -63,9 +59,6 @@
           </q-inner-loading>
 
         </q-card>
-      </q-dialog>
-
-  </q-page>
 </template>
 
 <script setup >
@@ -76,6 +69,11 @@ import { useRoute } from 'vue-router'
 const route = useRoute()
 
 import NotepadTextarea from '../components/NotepadTextarea.vue'
+
+const props = defineProps({
+  chapterId: Number,
+  show: Boolean,
+})
 
 const options = {
   source: [
@@ -104,12 +102,11 @@ const scrollSync = ref({})
 const error = ref(false)
 const loaded = ref(false)
 const saving = ref(false)
-const textModal = ref(true)
+const textModal = ref(false)
 const maximizedToggle = ref(false)
 
 const saveInterval = ref(false)
 
-const book = ref({})
 const data = reactive({
 
   source: {
@@ -128,7 +125,7 @@ const data = reactive({
 
 async function loadText (scope) {
   const textListResponse = await api.text.getItem({
-    chapter_id: route.params.chapter_id,
+    chapter_id: props.chapterId,
     language_id: data[scope].language_id
   })
   if (textListResponse.error) {
@@ -141,14 +138,6 @@ async function loadText (scope) {
     return []
   }
   data[scope] = textListResponse
-}
-async function loadBook () {
-  const bookItemResponse = await api.book.getItem({ filter: { chapter_id: route.params.chapter_id } })
-  if (bookItemResponse.error) {
-    error.value = bookItemResponse
-    return []
-  }
-  book.value = bookItemResponse
 }
 const saveTexts = async function () {
   if (!route.params.chapter_id) return
@@ -185,7 +174,6 @@ const saveText = async function (scope) {
 }
 const loadData = async function () {
   clearInterval(saveInterval.value)
-  loadBook()
   loaded.value = false
   await loadText('source')
   await loadText('target')
@@ -211,6 +199,9 @@ onMounted(async () => {
   await loadData()
 })
 
+watch(() => props.show, async (currentValue, oldValue) => {
+  textModal.value = props.show
+})
 watch(() => data.source.language_id, async (currentValue, oldValue) => {
   await loadText('source')
 })
