@@ -1,94 +1,99 @@
 <template>
-  <q-page class="bg-white q-pa-sm">
-    <q-card flat bordered class="q-my-sm" v-if="tokenRelations">
-      <q-card-actions align="right">
-        <q-btn flat color="primary" @click="loadData()">
-          Reload
-        </q-btn>
-        <q-btn flat color="primary" @click="feed()">
-          Reset All
-        </q-btn>
-        <q-btn flat color="primary" @click="train()" :disable="tokenRelations.length === 0">
-          Reset
-        </q-btn>
-        <q-btn  color="primary" @click="train()" icon="check" :disable="tokenRelations.length === 0">
-          Save
-        </q-btn>
-      </q-card-actions>
-    </q-card>
-    <q-card flat bordered class="q-my-sm">
-      <q-card-section>
-        <q-card-section horizontal>
-          <q-card-section class="full-width">
-            <div class="text-caption">Source text</div>
-            <div class="text-h6">{{ data.source.text }}</div>
-          </q-card-section>
-          <q-card-section  class="full-width">
-            <div class="text-caption">Target text</div>
-            <div class="text-h6">{{ data.target.text }}</div>
-          </q-card-section>
-        </q-card-section>
-      </q-card-section>
-      <q-separator />
-      <q-card-section  v-if="tokens">
-        <q-card-section horizontal>
-          <q-card-section bordered class="full-width" v-for="(language, langId) in tokens" :key="langId">
-              <q-chip
-                v-for="(token, tokenIndex) in language" :key="tokenIndex"
-                clickable
-                @mouseover="lightUpGroup(token.id, langId)"
-                @mouseout="tokenRelationsHighlighted={}"
-                @click="(activeGroup === null) ? setActiveGroup(token.id, langId) : relate(token.id, langId)"
-                :text-color="(activeGroup !== null && tokenRelations[activeGroup][langId]?.find(t => token?.id == t.token_id) ) ? 'white' : 'gray-7'"
-                :color="(activeGroup !== null && tokenRelations[activeGroup][langId]?.find(t => token?.id == t.token_id) ) ? tokenRelationsColors[activeGroup] : 'transparent'"
-              >
-                <b>{{ token.word }}</b>
-                <q-badge v-if="tokenCount[token.id]" floating rounded color="red" :label="tokenCount[token.id]" />
-              </q-chip>
+  <q-page-wrapper>
+    <q-app-header class="bg-white rounded-b-md bordered" reveal>
+        <q-toolbar-title>Achievements</q-toolbar-title>
+    </q-app-header>
+    <q-page class="bg-white q-pa-sm">
+      <q-card flat bordered class="q-my-sm" v-if="tokenRelations">
+        <q-card-actions align="right">
+          <q-btn flat color="primary" @click="loadData()">
+            Reload
+          </q-btn>
+          <q-btn flat color="primary" @click="feed()">
+            Reset All
+          </q-btn>
+          <q-btn flat color="primary" @click="train()" :disable="tokenRelations.length === 0">
+            Reset
+          </q-btn>
+          <q-btn  color="primary" @click="train()" icon="check" :disable="tokenRelations.length === 0">
+            Save
+          </q-btn>
+        </q-card-actions>
+      </q-card>
+      <q-card flat bordered class="q-my-sm">
+        <q-card-section>
+          <q-card-section horizontal>
+            <q-card-section class="full-width">
+              <div class="text-caption">Source text</div>
+              <div class="text-h6">{{ data.source.text }}</div>
+            </q-card-section>
+            <q-card-section  class="full-width">
+              <div class="text-caption">Target text</div>
+              <div class="text-h6">{{ data.target.text }}</div>
+            </q-card-section>
           </q-card-section>
         </q-card-section>
-      </q-card-section>
-      <q-separator  />
-      <q-card-section v-if="tokenRelations">
-        <q-card-section  class="q-pa-none">
-          <q-list separator>
-            <q-item v-for="(languages, relationIndex) in tokenRelations" :key="relationIndex"
-              v-show="!tokenRelationsHidden[relationIndex]"
-              :active="activeGroup == relationIndex"
-              :class="(tokenRelationsHighlighted[relationIndex]) ? `bg-${tokenRelationsHighlighted[relationIndex]}` : ''"
-              active-class="bg-teal-1 text-green-8">
-              <q-item-section avatar >
-                <q-avatar icon="fiber_manual_record" :text-color="tokenRelationsColors[relationIndex]" />
-              </q-item-section>
-              <q-item-section v-for="(tokens, langIndex) in languages" :key="langIndex">
-                <div>
-                  <q-chip  v-for="(token, tokenIndex) in tokens" :key="tokenIndex"
-                    :outline="(activeGroup != relationIndex)"
-                    :color="tokenRelationsColors[relationIndex]"
-                    :text-color="(activeGroup != relationIndex) ? tokenRelationsColors[relationIndex] : 'white'"
-                  >
-                    <b>{{token.word}}</b>
-                  </q-chip>
-                </div>
-              </q-item-section>
-              <q-item-section side>
-                <div class="q-gutter-sm" >
-                  <q-btn v-if="activeGroup != relationIndex" flat round icon="edit" @click="activeGroup = relationIndex"  />
-                  <q-btn v-if="activeGroup == relationIndex" flat round color="positive" icon="done" @click="activeGroup = null" />
-                  <q-btn flat  round color="negative" icon="delete_outline" @click="deleteGroup(relationIndex)" />
-                </div>
-              </q-item-section>
-            </q-item>
-          </q-list>
+        <q-separator />
+        <q-card-section  v-if="tokens">
+          <q-card-section horizontal>
+            <q-card-section bordered class="full-width" v-for="(language, langId) in tokens" :key="langId">
+                <q-chip
+                  v-for="(token, tokenIndex) in language" :key="tokenIndex"
+                  clickable
+                  @mouseover="lightUpGroup(token.id, langId)"
+                  @mouseout="tokenRelationsHighlighted={}"
+                  @click="(activeGroup === null) ? setActiveGroup(token.id, langId) : relate(token.id, langId)"
+                  :text-color="(activeGroup !== null && tokenRelations[activeGroup][langId]?.find(t => token?.id == t.token_id) ) ? 'white' : 'gray-7'"
+                  :color="(activeGroup !== null && tokenRelations[activeGroup][langId]?.find(t => token?.id == t.token_id) ) ? tokenRelationsColors[activeGroup] : 'transparent'"
+                >
+                  <b>{{ token.word }}</b>
+                  <q-badge v-if="tokenCount[token.id]" floating rounded color="red" :label="tokenCount[token.id]" />
+                </q-chip>
+            </q-card-section>
+          </q-card-section>
         </q-card-section>
-      </q-card-section>
-      <q-card-actions>
-        <q-btn class="full-width" flat color="primary" @click="createGroup()" icon="add">
-          New group
-        </q-btn>
-      </q-card-actions>
-    </q-card>
-  </q-page>
+        <q-separator  />
+        <q-card-section v-if="tokenRelations">
+          <q-card-section  class="q-pa-none">
+            <q-list separator>
+              <q-item v-for="(languages, relationIndex) in tokenRelations" :key="relationIndex"
+                v-show="!tokenRelationsHidden[relationIndex]"
+                :active="activeGroup == relationIndex"
+                :class="(tokenRelationsHighlighted[relationIndex]) ? `bg-${tokenRelationsHighlighted[relationIndex]}` : ''"
+                active-class="bg-teal-1 text-green-8">
+                <q-item-section avatar >
+                  <q-avatar icon="fiber_manual_record" :text-color="tokenRelationsColors[relationIndex]" />
+                </q-item-section>
+                <q-item-section v-for="(tokens, langIndex) in languages" :key="langIndex">
+                  <div>
+                    <q-chip  v-for="(token, tokenIndex) in tokens" :key="tokenIndex"
+                      :outline="(activeGroup != relationIndex)"
+                      :color="tokenRelationsColors[relationIndex]"
+                      :text-color="(activeGroup != relationIndex) ? tokenRelationsColors[relationIndex] : 'white'"
+                    >
+                      <b>{{token.word}}</b>
+                    </q-chip>
+                  </div>
+                </q-item-section>
+                <q-item-section side>
+                  <div class="q-gutter-sm" >
+                    <q-btn v-if="activeGroup != relationIndex" flat round icon="edit" @click="activeGroup = relationIndex"  />
+                    <q-btn v-if="activeGroup == relationIndex" flat round color="positive" icon="done" @click="activeGroup = null" />
+                    <q-btn flat  round color="negative" icon="delete_outline" @click="deleteGroup(relationIndex)" />
+                  </div>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-card-section>
+        </q-card-section>
+        <q-card-actions>
+          <q-btn class="full-width" flat color="primary" @click="createGroup()" icon="add">
+            New group
+          </q-btn>
+        </q-card-actions>
+      </q-card>
+    </q-page>
+  </q-page-wrapper>
 </template>
 
 <script setup >

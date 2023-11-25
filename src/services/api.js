@@ -107,6 +107,9 @@ export class Api extends ApiService{
         saveItem: (params) => {
             return this.post('book', 'saveItem', params)
         },
+        buildItem: (params) => {
+            return this.post('book', 'buildItem', params)
+        },
     }
     chapter = {
         getItem: (params) => {
@@ -117,7 +120,11 @@ export class Api extends ApiService{
         },
         createItem: (params) => {
             return this.post('chapter', 'createItem', params)
+        },
+        deleteItem: (params) => {
+            return this.post('chapter', 'deleteItem', params)
         }
+
     }
     text = {
         getItem: (params) => {
@@ -128,6 +135,9 @@ export class Api extends ApiService{
         },
         saveItem: (params) => {
             return this.post('text', 'saveItem', params)
+        },
+        deleteItem: (params) => {
+            return this.post('text', 'deleteItem', params)
         },
         exportItem: (params) => {
             return this.post('text', 'exportItem', params)

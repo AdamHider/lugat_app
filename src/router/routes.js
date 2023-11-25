@@ -8,17 +8,17 @@ const routes = [
       {
         path: 'training',
         component: () => import('pages/TrainingPage.vue'),
-        meta: { pageTitle: 'Training' }
+        meta: { pageTitle: 'Training', bottomBarEnabled: true }
       },
       {
         path: 'prediction',
         component: () => import('pages/PredictionPage.vue'),
-        meta: { pageTitle: 'Prediction' }
+        meta: { pageTitle: 'Prediction', bottomBarEnabled: true }
       },
       {
         path: 'books',
         component: () => import('pages/BooksPage.vue'),
-        meta: { pageTitle: 'Books' }
+        meta: { pageTitle: 'Books', bottomBarEnabled: true }
       },
       {
         path: 'book-:book_id',

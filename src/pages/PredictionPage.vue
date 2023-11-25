@@ -1,73 +1,78 @@
 <template>
-  <q-page class="bg-white q-pa-sm">
-    <q-card flat bordered class="q-my-sm">
-        <q-card-section horizontal>
-          <q-card-section class="full-width">
-            <q-select
-              v-model="data.source_language_id"
-              :options="options"
-              emit-value
-              map-options
-              label="Language"
-              class="q-my-sm"
-              dense
-              outlined
-            />
+  <q-page-wrapper>
+    <q-app-header class="bg-white rounded-b-md bordered" reveal>
+        <q-toolbar-title>Translate</q-toolbar-title>
+    </q-app-header>
+    <q-page class="bg-white q-pa-sm">
+      <q-card flat bordered class="q-my-sm">
+          <q-card-section horizontal>
+            <q-card-section class="full-width">
+              <q-select
+                v-model="data.source_language_id"
+                :options="options"
+                emit-value
+                map-options
+                label="Language"
+                class="q-my-sm"
+                dense
+                outlined
+              />
+            </q-card-section>
+            <q-card-section class="full-width">
+              <q-select
+                v-model="data.target_language_id"
+                :options="options"
+                emit-value
+                map-options
+                label="Language"
+                class="q-my-sm"
+                dense
+                outlined
+              />
+            </q-card-section>
           </q-card-section>
           <q-card-section class="full-width">
-            <q-select
-              v-model="data.target_language_id"
-              :options="options"
-              emit-value
-              map-options
-              label="Language"
-              class="q-my-sm"
-              dense
+            <q-input
+              v-model="data.token"
+              debounce="500"
               outlined
-            />
+              placeholder="Enter a word..."
+            >
+              <template v-slot:append>
+                <q-icon name="search" />
+              </template>
+            </q-input>
           </q-card-section>
-        </q-card-section>
-        <q-card-section class="full-width">
-          <q-input
-            v-model="data.token"
-            debounce="500"
-            outlined
-            placeholder="Enter a word..."
-          >
-            <template v-slot:append>
-              <q-icon name="search" />
-            </template>
-          </q-input>
-        </q-card-section>
-      <q-card-actions>
-        <q-btn flat color="primary" @click="search()">
-          Search!
-        </q-btn>
-      </q-card-actions>
-    </q-card>
-    <q-card flat bordered class="q-my-sm"  v-if="translations.length > 0">
-        <q-card-section class="full-width">
-          <q-chip v-for="(translation, translationIndex) in translations" :key="translationIndex" >
-            {{translation.word}}
-          </q-chip>
-        </q-card-section>
-    </q-card>
-    <q-card flat bordered class="q-my-sm" v-if="sentences.length> 0">
-        <q-card-section class="full-width">
-          <div class="text-h6">Examples of use</div>
-            <q-list separator>
-              <q-item v-for="(sentenceGroup, sentenceGroupIndex) in sentences" :key="sentenceGroupIndex"  active-class="bg-teal-1 text-green-8">
-                <q-item-section>
-                  <div v-html="sentenceGroup.source_sentence"></div>
-                </q-item-section>
-                <q-item-section>
-                  <div v-html="sentenceGroup.target_sentence"></div>
-                </q-item-section>
-              </q-item>
-            </q-list>
-        </q-card-section>
-    </q-card>
-  </q-page>
+        <q-card-actions>
+          <q-btn flat color="primary" @click="search()">
+            Search!
+          </q-btn>
+        </q-card-actions>
+      </q-card>
+      <q-card flat bordered class="q-my-sm"  v-if="translations.length > 0">
+          <q-card-section class="full-width">
+            <q-chip v-for="(translation, translationIndex) in translations" :key="translationIndex" >
+              {{translation.word}}
+            </q-chip>
+          </q-card-section>
+      </q-card>
+      <q-card flat bordered class="q-my-sm" v-if="sentences.length> 0">
+          <q-card-section class="full-width">
+            <div class="text-h6">Examples of use</div>
+              <q-list separator>
+                <q-item v-for="(sentenceGroup, sentenceGroupIndex) in sentences" :key="sentenceGroupIndex"  active-class="bg-teal-1 text-green-8">
+                  <q-item-section>
+                    <div v-html="sentenceGroup.source_sentence"></div>
+                  </q-item-section>
+                  <q-item-section>
+                    <div v-html="sentenceGroup.target_sentence"></div>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+          </q-card-section>
+      </q-card>
+    </q-page>
+  </q-page-wrapper>
 </template>
 
 <script setup >
