@@ -92,6 +92,7 @@ const languages = ref([
 
 const language_id = ref(null)
 const confirmDelete = ref(false)
+const error = ref('')
 
 const saveText = async function (data) {
   await api.text.saveItem(data)
