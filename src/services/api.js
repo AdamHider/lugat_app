@@ -72,6 +72,9 @@ export class Api extends ApiService{
         setTrained: (params) => {
             return this.post('sentence', 'setTrained', params)
         },
+        setSkipped: (params) => {
+            return this.post('sentence', 'setSkipped', params)
+        },
         feed: (params) => {
             return this.post('sentence', 'feed', params)
         },
@@ -93,8 +96,16 @@ export class Api extends ApiService{
         }
     }
     word = {
+      getList: (params) => {
+          return this.post('word', 'getList', params)
+      },
       getTranslations: (params) => {
           return this.post('word', 'getTranslations', params)
+      },
+    }
+    lemma = {
+      getList: (params) => {
+          return this.post('lemma', 'getList', params)
       },
     }
     book = {
@@ -142,8 +153,6 @@ export class Api extends ApiService{
         exportItem: (params) => {
             return this.post('text', 'exportItem', params)
         },
-
-
     }
     uploader = {
         upload: (params) =>  {

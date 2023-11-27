@@ -12,10 +12,13 @@
           <q-btn flat color="primary" @click="feed()">
             Reset All
           </q-btn>
-          <q-btn flat color="primary" @click="train()" :disable="tokenRelations.length === 0">
+          <q-btn flat color="primary" @click="reset()" :disable="tokenRelations.length === 0 || activeGroup !== null">
             Reset
           </q-btn>
-          <q-btn  color="primary" @click="train()" icon="check" :disable="tokenRelations.length === 0">
+          <q-btn   color="grey" @click="skip()" icon="check" :disable="activeGroup !== null">
+            Skip
+          </q-btn>
+          <q-btn  color="positive" @click="train()" icon="check" :disable="tokenRelations.length === 0 || activeGroup !== null">
             Save
           </q-btn>
         </q-card-actions>
@@ -207,6 +210,13 @@ const train = async function () {
   await loadData()
 }
 
+const skip = async function () {
+  await api.sentence.setSkipped({ id: data.value.source.id })
+  await api.sentence.setSkipped({ id: data.value.target.id })
+  await loadData()
+}
+
+
 
 const relate = function (tokenId, langId) {
 
@@ -316,7 +326,6 @@ const countTokens = function () {
         var token = tokens.value[langId][i]
         if(!tokenCount.value[token.id] ) tokenCount.value[token.id] = 0
         if (group?.find(relation => relation.token_id === token.id)) {
-          console.log(token.id)
           tokenCount.value[token.id] = tokenCount.value[token.id]+1
         }
       }

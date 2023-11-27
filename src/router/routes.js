@@ -29,6 +29,11 @@ const routes = [
         path: 'chapter-:chapter_id',
         component: () => import('pages/ChapterPage.vue'),
         meta: { pageTitle: 'Chapter' }
+      },
+      {
+        path: 'lemmatization',
+        component: () => import('pages/LemmatizationPage.vue'),
+        meta: { pageTitle: 'Words', bottomBarEnabled: true }
       }
     ]
   },

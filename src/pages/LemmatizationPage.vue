@@ -1,15 +1,15 @@
 <template>
   <q-page-wrapper>
     <q-app-header class="bg-white rounded-b-md bordered" reveal>
-        <q-toolbar-title>Books</q-toolbar-title>
+        <q-toolbar-title>Words</q-toolbar-title>
     </q-app-header>
     <q-page class="bg-white q-pa-sm" >
-        <BookList/>
+        <WordList/>
     </q-page>
   </q-page-wrapper>
 </template>
 
 <script setup >
-import BookList from '../components/BookList.vue'
+import WordList from '../components/WordList.vue'
 
 </script>

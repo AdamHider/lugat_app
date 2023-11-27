@@ -1,13 +1,18 @@
 <template>
   <q-tabs>
       <q-route-tab
-          icon="map"
+          icon="search"
           :to="routes.prediction"
           exact replace
       />
       <q-route-tab
-          icon="group"
+          icon="checklist"
           :to="routes.training"
+          exact replace
+      />
+      <q-route-tab
+          icon="spellcheck"
+          :to="routes.lemmatization"
           exact replace
       />
       <q-route-tab
