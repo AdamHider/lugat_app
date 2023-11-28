@@ -6,7 +6,6 @@
 <template>
   <q-card flat class="q-pa-sm q-my-sm">
     <q-card-actions>
-      <q-btn color="primary" icon="add" label="New book" @click="bookModal = !bookModal"></q-btn>
       <q-input borderless dense v-model="filterSet.filter" label="Search book ..."  debounce="500">
           <template v-slot:append>
             <q-icon v-if="filterSet.filter !== ''" name="close" @click="filterSet.filter = ''" class="cursor-pointer" />
@@ -18,13 +17,9 @@
 
   <q-list bordered padding  >
     <q-infinite-scroll ref="infiniteScroll" @load="loadData" :offset="250">
-        <q-item v-for="(book, bookIndex) in books" :key="bookIndex" clickable v-ripple :to="`/book-${book.id}`">
-          <q-item-section top avatar>
-            <q-avatar color="primary" text-color="white"  icon="book" />
-          </q-item-section>
-
+        <q-item v-for="(word, wordIndex) in words" :key="wordIndex" clickable v-ripple @click="wordModal = !wordModal; activeWord = word">
           <q-item-section>
-            <q-item-label>{{book.word}}</q-item-label>
+            <q-item-label>{{word.word}}</q-item-label>
           </q-item-section>
 
           <q-item-section side top>
@@ -34,23 +29,45 @@
     </q-infinite-scroll>
   </q-list>
 
-  <q-dialog v-model="bookModal">
+  <q-dialog v-model="wordModal">
         <q-card style="width: 700px; max-width: 80%;">
           <q-card-section>
-            <div class="text-h6">Edit book</div>
+            <div class="text-h6">{{ formData.word }}</div>
           </q-card-section>
           <q-separator />
           <q-card-section >
             <q-form class=" q-gutter-md">
-              <q-input outlined v-model="formData.title" label="Title"/>
-              <q-input outlined v-model="formData.author" label="Author"/>
-              <q-input outlined v-model="formData.year" label="Year"/>
+              <q-select
+                filled
+                v-model="formData.lemma_id"
+                use-input
+                hide-selected
+                fill-input
+                emit-value
+                map-options
+                input-debounce="0"
+                option-value="id"
+                option-label="lemma"
+                label="Lemma"
+                :options="lemmaOptions"
+                @filter="autocomplete"
+                style="width: 250px"
+                hint="Enter lemma..."
+              >
+                <template v-slot:no-option>
+                  <q-item>
+                    <q-item-section class="text-grey">
+                      No results
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
             </q-form>
           </q-card-section>
           <q-separator />
           <q-card-actions align="right">
             <q-btn v-close-popup flat color="gray" label="Cancel" />
-            <q-btn v-close-popup flat color="primary" label="Save" @click="saveBook()" />
+            <q-btn v-close-popup flat color="primary" label="Save" @click="saveWord()" />
           </q-card-actions>
         </q-card>
     </q-dialog>
@@ -61,17 +78,18 @@ import { api } from '../services/index'
 import { ref, watch, onMounted, onActivated, reactive } from 'vue'
 
 const error = ref({})
-const books = ref([])
-const bookModal = ref(false)
-const chapterModal = ref(false)
+const words = ref([])
+const wordModal = ref(false)
+const activeWord = ref({})
 const infiniteScroll = ref(null)
 const isLoaded = ref(false)
+const lemmaOptions = ref([])
 
-const formData = reactive({
+const formData = ref({
   id: null,
-  title: '',
-  author: '',
-  year: ''
+  word: '',
+  lemma_id: '',
+  language_id: ''
 })
 const filterSet = ref({
   language_id: 1,
@@ -90,32 +108,40 @@ const loadData = async function  (index, done) {
   var offset = limit * (index-1)
   const bookListResponse = await api.word.getList({ filter: { search: filterSet.value.filter }, lemmaless: true, limit, offset })
   if (bookListResponse.error) {
-    books.value = []
+    words.value = []
     error.value = bookListResponse
     isLoaded.value = true
     done()
     return
   }
   if(offset == 0){
-    books.value = bookListResponse
+    words.value = bookListResponse
   } else {
-    books.value = [...books.value, ...bookListResponse];
+    words.value = [...words.value, ...bookListResponse];
   }
   isLoaded.value = false
   if(bookListResponse.length < limit)  isLoaded.value = true
   done()
 }
-const saveBook = async function () {
-  const bookAddResponse = await api.book.saveItem({
-    id: formData.id,
-    title: formData.title,
-    author: formData.author,
-    year: formData.year
-  })
-  if (bookAddResponse.error) {
-    bookAddResponse.value = []
+const saveWord = async function () {
+  const wordAddResponse = await api.word.saveItem(formData.value)
+  if (wordAddResponse.error) {
+    wordAddResponse.value = []
   }
+  wordModal.value != wordModal.value
+  loadData()
   return true
+}
+const autocomplete = async function(val, update, abort) {
+  // call abort() at any time if you can't retrieve data somehow
+    const lemmaListResponse = await api.lemma.autocomplete({ filter: { lemma: val }})
+    update(() => {
+      if (lemmaListResponse.error) {
+        lemmaOptions.value = []
+      } else {
+        lemmaOptions.value = lemmaListResponse
+      }
+    })
 }
 
 onMounted(async () => {
@@ -124,5 +150,12 @@ onMounted(async () => {
 
 watch(() => filterSet.value.filter, async (currentValue, oldValue) => {
   filter()
+})
+watch(() => wordModal.value, async (currentValue, oldValue) => {
+  if(wordModal.value){
+    formData.value = activeWord.value
+  } else {
+    formData.value = {}
+  }
 })
 </script>
