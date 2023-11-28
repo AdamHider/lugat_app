@@ -31,9 +31,14 @@ const routes = [
         meta: { pageTitle: 'Chapter' }
       },
       {
-        path: 'lemmatization',
-        component: () => import('pages/LemmatizationPage.vue'),
+        path: 'words',
+        component: () => import('pages/WordsPage.vue'),
         meta: { pageTitle: 'Words', bottomBarEnabled: true }
+      },
+      {
+        path: 'word-:word_id',
+        component: () => import('pages/WordPage.vue'),
+        meta: { pageTitle: 'Word' }
       }
     ]
   },

@@ -12,7 +12,7 @@
       />
       <q-route-tab
           icon="spellcheck"
-          :to="routes.lemmatization"
+          :to="routes.words"
           exact replace
       />
       <q-route-tab
