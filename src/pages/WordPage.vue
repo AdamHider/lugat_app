@@ -120,19 +120,20 @@ const getSentences = async function () {
 }
 
 const saveWord = async function () {
+  await lemmatize(lemmaModel.value.lemma)
   const wordSaveResponse = await api.word.saveItem(word.value)
   if (wordSaveResponse.error) {
     return false
   }
-  await lemmatize(lemmaModel.value.lemma)
   return true
 }
 const lemmatize = async function (lemma) {
-  const lemmaAddResponse = await api.lemma.lemmatize({ lemma: lemma, language_id: word.value.language_id, word: word.value.word })
-  if (lemmaAddResponse.error) {
-    return false
+  const lemmaAddResponse = await api.lemma.lemmatize({ lemma: lemma, word_id: route.params.word_id })
+  if (!lemmaAddResponse.form_id || lemmaAddResponse.error) {
+    word.value.form_id = null
+    return
   }
-  return true
+  word.value.form_id = lemmaAddResponse.form_id
 }
 const addLemma = async function (lemma) {
   const lemmaAddResponse = await api.lemma.saveItem({ lemma: lemma, language_id: word.value.language_id })
