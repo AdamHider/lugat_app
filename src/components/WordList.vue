@@ -20,7 +20,6 @@
           <q-item-section>
             <q-item-label>{{word.word}}</q-item-label>
           </q-item-section>
-
           <q-item-section side top>
             <q-item-label caption>meta</q-item-label>
           </q-item-section>
@@ -53,7 +52,9 @@ const loadData = async function  (index, done) {
   if(isLoaded.value === true) return done()
   var limit = 15
   var offset = limit * (index-1)
-  const wordListResponse = await api.word.getList({ filter: { search: filterSet.value.filter }, lemmaless: true, limit, offset })
+  var filter = null
+  if(filterSet.value.filter) filter = {word: filterSet.value.filter}
+  const wordListResponse = await api.word.getList({ filter, language_id: 1 , lemmaless: true, limit, offset })
   if (wordListResponse.error) {
     words.value = []
     error.value = wordListResponse

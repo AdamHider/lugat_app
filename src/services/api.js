@@ -111,6 +111,9 @@ export class Api extends ApiService {
     saveItem: (params) => {
       return this.post('word', 'saveItem', params)
     },
+    linkLemmas: (params) => {
+      return this.post('word', 'linkLemmas', params)
+    }
   }
   lemma = {
     getList: (params) => {
@@ -122,9 +125,9 @@ export class Api extends ApiService {
     saveItem: (params) => {
       return this.post('lemma', 'saveItem', params)
     },
-    lemmatize: (params) => {
-      return this.post('lemma', 'lemmatize', params)
-    }
+    predictList: (params) => {
+      return this.post('lemma', 'predictList', params)
+    },
   }
   book = {
     getItem: (params) => {
@@ -172,6 +175,12 @@ export class Api extends ApiService {
       return this.post('text', 'exportItem', params)
     },
   }
+  form = {
+    createItemFromLemma: (params) => {
+      return this.post('form', 'createItemFromLemma', params)
+    }
+  }
+
   uploader = {
     upload: (params) => {
       return this.post('uploader', 'uploadItem', params)

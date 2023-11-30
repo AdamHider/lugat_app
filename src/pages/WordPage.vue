@@ -3,57 +3,34 @@
     <q-app-header class="bg-white rounded-b-md bordered" reveal>
         <q-btn flat icon="arrow_back"  @click="$router.go(-1);" v:slot="back-button"/>
         <q-toolbar-title>Achievements</q-toolbar-title>
+        <q-btn flat icon="check" :disabled="!isChanged" color="positive" @click="saveChanges()"/>
     </q-app-header>
     <q-page class="bg-white q-pa-sm">
       <q-card>
         <q-card-section>
           <div class="text-caption">{{ word.language }}</div>
           <div class="text-h6">{{ word.word }}</div>
-          <div v-if="word.lemma_id" class="text-caption"><b>{{ word.lemma}}</b></div>
+          <div v-if="word.lemma" class="text-caption"><b>{{ word.lemma }}</b></div>
         </q-card-section>
         <q-separator />
-        <q-card-section >
-          <div class="text-h6">Lemma </div>
-          <q-list >
-            <q-item>
-              <q-item-section avatar>
-                <q-icon color="primary" name="search" />
-              </q-item-section>
+        <q-card-section>
+          <div class="text-h6">Lemmas:</div>
+          <q-list>
+            <q-item v-for="(lemma, lemmaIndex) in lemmas" :key="lemmaIndex" clickable v-ripple>
               <q-item-section>
-                <q-item-label caption>Manual</q-item-label>
-                <q-select
-                  ref="select"
-                  dense outlined
-                  v-model="lemmaModel"
-                  use-input hide-selected fill-input map-options
-                  input-debounce="200" option-value="id" option-label="lemma"
-                  label="Type lemma"
-                  :options="lemmaOptions"
-                  @filter="searchLemma"
-                >
-                  <template v-slot:no-option="scope">
-                    <q-item clickable @click="addLemma(scope.inputValue)" dense>
-                      <q-item-section avatar>
-                        <q-icon color="primary" name="add" />
-                      </q-item-section>
-                      <q-item-section>
-                        Add <b>{{scope.inputValue}}</b>
-                      </q-item-section>
-                    </q-item>
-                  </template>
-                </q-select>
+                <q-item-label>{{lemma.lemma}}</q-item-label>
               </q-item-section>
             </q-item>
           </q-list>
+          <q-btn icon="add" @click="addLemmaModal = true">
+            New lemma
+          </q-btn>
         </q-card-section>
         <q-separator />
-        <q-card-actions align="right">
-          <q-btn v-close-popup flat color="primary" label="Save" @click="saveWord()" />
-        </q-card-actions>
       </q-card>
       <q-card class="q-my-sm">
         <q-card-section>
-          <div class="text-h6">Chapters</div>
+          <div class="text-h6">Examples</div>
         </q-card-section>
         <q-card-section class="q-pa-none">
           <q-list >
@@ -65,8 +42,8 @@
           </q-list>
         </q-card-section>
       </q-card>
-      <q-dialog v-model="sentenceModal" >
-        <sentence-modal :sentence="activeChapter" @onUpdated="loadData" />
+      <q-dialog v-model="addLemmaModal">
+        <LemmaSelector :word="word"  @onChange="onLemmaChange"/>
       </q-dialog>
     </q-page>
   </q-page-wrapper>
@@ -76,22 +53,16 @@
 import { api } from '../services/index'
 import { ref, watch, onMounted, onActivated, reactive } from 'vue'
 import { useRoute } from 'vue-router'
-import ChapterModal from '../components/ChapterModal.vue'
+import LemmaSelector from '../components/LemmaSelector.vue'
 
 const route = useRoute()
-const sentenceModal = ref(false)
-const activeChapter = ref(null)
+const error = ref(null)
 const select = ref({})
-const word = ref({
-  id: null,
-  word: '',
-  lemma_id: '',
-  lemma: '',
-  language_id: ''
-})
-const lemmaModel = ref({})
-const lemmaOptions = ref([])
+const word = ref({})
 const sentences = ref([])
+const lemmas = ref([])
+const isChanged = ref(false)
+const addLemmaModal = ref(false)
 
 
 
@@ -102,11 +73,8 @@ const loadData = async function () {
     return []
   }
   word.value = wordItemResponse
-  lemmaModel.value = {
-    id: wordItemResponse.lemma_id,
-    lemma: wordItemResponse.lemma
-  }
   getSentences()
+  getLemmas()
 }
 
 const getSentences = async function () {
@@ -119,49 +87,43 @@ const getSentences = async function () {
   sentences.value = sentenceListResponse
 }
 
-const saveWord = async function () {
-  await lemmatize(lemmaModel.value.lemma)
+const getLemmas = async function () {
+  const lemmaListResponse = await api.lemma.getList({ word_id: route.params.word_id })
+  if (lemmaListResponse.error) {
+    error.value = lemmaListResponse
+    lemmas.value = []
+    return
+  }
+  lemmas.value = lemmaListResponse
+}
+
+const saveChanges = async function () {
+  await linkLemmas()
+  if(error) return
   const wordSaveResponse = await api.word.saveItem(word.value)
   if (wordSaveResponse.error) {
     return false
   }
+  isChanged.value = false
+  await loadData()
   return true
 }
-const lemmatize = async function (lemma) {
-  const lemmaAddResponse = await api.lemma.lemmatize({ lemma: lemma, word_id: route.params.word_id })
-  if (!lemmaAddResponse.form_id || lemmaAddResponse.error) {
-    word.value.form_id = null
+
+const linkLemmas = async function (lemma) {
+  const linkLemmasResponse = await api.word.linkLemmas({ lemmas: lemmas.value, word_id: route.params.word_id })
+  if (linkLemmasResponse.error) {
+    error.value = linkLemmasResponse
     return
   }
-  word.value.form_id = lemmaAddResponse.form_id
-}
-const addLemma = async function (lemma) {
-  const lemmaAddResponse = await api.lemma.saveItem({ lemma: lemma, language_id: word.value.language_id })
-  if (lemmaAddResponse.error) {
-    return
-  }
-  lemmaModel.value.id = lemmaAddResponse
-  lemmaModel.value.lemma = lemma
-  select.value.hidePopup()
-}
-const searchLemma = async function(val, update, abort) {
-    const lemmaListResponse = await api.lemma.autocomplete({ filter: { lemma: val }})
-    update(() => {
-      if (lemmaListResponse.error) {
-        lemmaOptions.value = []
-      } else {
-        lemmaOptions.value = lemmaListResponse
-      }
-    })
 }
 
-watch(() => lemmaModel.value.id, async (currentValue, oldValue) => {
-  word.value.lemma_id = lemmaModel.value.id
-  word.value.lemma = lemmaModel.value.lemma
-  console.log(word.value)
-})
+const onLemmaChange = function (lemma) {
+  lemmas.value.push(lemma)
+  isChanged.value = true
+}
 
-onActivated(async () => {
+onMounted(async () => {
+  word.value = {}
   await loadData()
 })
 

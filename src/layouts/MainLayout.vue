@@ -2,7 +2,7 @@
   <q-layout view="hHh Lpr lff"  class="shadow-2 rounded-borders">
     <router-view v-slot="{ Component, route }">
       <transition :name="`page-${route.meta.transition}`">
-          <keep-alive >
+          <keep-alive :exclude="['WordPage']">
               <component :is="Component"/>
           </keep-alive>
       </transition>
