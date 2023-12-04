@@ -67,9 +67,10 @@ import { api } from '../services/index'
 import { ref, watch, onMounted, onActivated, toRefs } from 'vue'
 
 const props = defineProps({
-  word: Object
+  word: Object,
+  lemmas: Array
 })
-const { word: word } = toRefs(props)
+const { word: word, lemmas: lemmas } = toRefs(props)
 const emits = defineEmits(['onChange'])
 
 const select = ref({})
@@ -90,8 +91,20 @@ const loadData = async function () {
     lemmaPredictions.value = []
     return
   }
-  lemmaPredictions.value = lemmaListResponse
+  lemmaPredictions.value = filterPredictions(lemmaListResponse)
 }
+
+
+const filterPredictions = function (predictions) {
+  var result = [];
+  for(var i in predictions){
+    if(lemmas.value.find(lemma => lemma.lemma == predictions[i].lemma)) continue;
+    result.push(predictions[i])
+  }
+  return result
+}
+
+
 
 const addLemma = async function (lemma) {
   const lemmaAddResponse = await api.lemma.saveItem({ lemma: lemma, language_id: word.value.language_id })

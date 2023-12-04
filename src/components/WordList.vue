@@ -75,7 +75,9 @@ const loadData = async function  (index, done) {
 onMounted(async () => {
   infiniteScroll.value.trigger()
 })
-
+onActivated(async () => {
+  infiniteScroll.value.trigger()
+})
 watch(() => filterSet.value.filter, async (currentValue, oldValue) => {
   filter()
 })

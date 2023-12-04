@@ -2,7 +2,7 @@
   <q-page-wrapper>
     <q-app-header class="bg-white rounded-b-md bordered" reveal>
         <q-btn flat icon="arrow_back"  @click="$router.go(-1);" v:slot="back-button"/>
-        <q-toolbar-title>Achievements</q-toolbar-title>
+        <q-toolbar-title>Edit {{formData.title}}</q-toolbar-title>
     </q-app-header>
     <q-page class="bg-white q-pa-sm">
       <q-card>
@@ -17,10 +17,6 @@
             <q-input outlined v-model="formData.year" label="Year"/>
           </q-form>
         </q-card-section>
-        <q-separator />
-        <q-card-actions align="right">
-          <q-btn v-close-popup flat color="primary" label="Save" @click="saveBook()" />
-        </q-card-actions>
       </q-card>
       <q-card class="q-my-sm">
         <q-card-section>
@@ -28,14 +24,13 @@
         </q-card-section>
         <q-card-section class="q-pa-none">
           <q-list >
-            <q-item clickable v-for="(chapter, chapterIndex) in chapters" :key="chapterIndex" @click="activeChapter = chapter; chapterModal = true">
+            <q-item clickable v-for="(chapter, chapterIndex) in chapters" :key="chapterIndex" :disable="formData.is_built" @click="activeChapter = chapter; chapterModal = true">
                 <q-item-section avatar top>
                   <q-avatar icon="subdirectory_arrow_right" />
                 </q-item-section>
                 <q-item-section>
-                  Chapter {{chapter.number}}
+                  Chapter {{chapter.number}} <i v-if="!chapter.languages" class="text-grey-5">(Empty)</i>
                 </q-item-section>
-
                 <q-item-section side>
                   <div class="row" v-if="chapter.languages">
                     <q-chip v-for="(language, langIndex) in chapter.languages" :key="langIndex" color="primary" text-color="white" size="sm">
@@ -43,12 +38,9 @@
                     </q-chip>
                   </div>
                 </q-item-section>
-                <q-item-section side v-if="chapter.is_exported == 1">
-                  <b class="text-positive">Exported</b>
-                </q-item-section>
             </q-item>
 
-            <q-item clickable @click="addChapter(chapters.length+1)">
+            <q-item clickable @click="addChapter(chapters.length+1)" :disable="formData.is_built">
               <q-item-section avatar top>
                 <q-avatar icon="add" />
               </q-item-section>
@@ -60,10 +52,12 @@
         </q-card-section>
         <q-separator />
         <q-card-actions align="right">
-          <q-btn v-close-popup flat color="primary" label="Build" @click="build()" />
+          <q-btn v-if="!formData.is_built" flat color="primary" label="Build"  icon="hardware" @click="build()" />
+          <q-btn v-else flat color="positive" label="Built" icon="check" disabled/>
+          <q-btn  color="primary" icon="save" label="Save" @click="save()" />
         </q-card-actions>
       </q-card>
-      <q-dialog v-model="chapterModal" >
+      <q-dialog v-model="chapterModal" v-if="!formData.is_built">
         <chapter-modal :chapter="activeChapter" @onUpdated="loadData" />
       </q-dialog>
     </q-page>
@@ -73,9 +67,12 @@
 <script setup >
 import { api } from '../services/index'
 import { ref, watch, onMounted, onActivated, reactive } from 'vue'
+import { useNotification } from '../composables/useNotification'
+import { useQuasar } from 'quasar'
 import { useRoute } from 'vue-router'
 import ChapterModal from '../components/ChapterModal.vue'
 
+const { error, warning, success } = useNotification()
 const route = useRoute()
 const chapterModal = ref(false)
 const activeChapter = ref(null)
@@ -98,6 +95,7 @@ const loadData = async function () {
   formData.title = bookItemResponse.title
   formData.author = bookItemResponse.author
   formData.year = bookItemResponse.year
+  formData.is_built = bookItemResponse.is_built
   chapters.value = bookItemResponse.chapters
   if(activeChapter.value){
     activeChapter.value = bookItemResponse.chapters.find(chapter => chapter.id == activeChapter.value.id)
@@ -105,7 +103,7 @@ const loadData = async function () {
   if(!activeChapter.value) chapterModal.value = false
 }
 
-const saveBook = async function () {
+const save = async function () {
   const bookAddResponse = await api.book.saveItem({
     id: formData.id,
     title: formData.title,
@@ -115,17 +113,20 @@ const saveBook = async function () {
   if (bookAddResponse.error) {
     bookAddResponse.value = []
   }
-  return true
+  return loadData()
 }
 const build = async function () {
+  if(true) return error('Empty sources')
+  if(formData.is_built) return
   const bookBuildResponse = await api.book.buildItem({id: formData.id})
   if (bookBuildResponse.error) {
     bookBuildResponse.value = []
   }
-  return true
+  return loadData()
 }
 
 const addChapter = async function (number) {
+  if(formData.is_built) return
   const chapterAddResponse = await api.chapter.createItem({ book_id: route.params.book_id, number })
   if (chapterAddResponse.error) {
     chapterAddResponse.value = []

@@ -113,6 +113,9 @@ export class Api extends ApiService {
     },
     linkLemmas: (params) => {
       return this.post('word', 'linkLemmas', params)
+    },
+    unlinkLemma: (params) => {
+      return this.post('word', 'unlinkLemma', params)
     }
   }
   lemma = {

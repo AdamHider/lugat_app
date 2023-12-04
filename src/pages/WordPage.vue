@@ -2,7 +2,7 @@
   <q-page-wrapper>
     <q-app-header class="bg-white rounded-b-md bordered" reveal>
         <q-btn flat icon="arrow_back"  @click="$router.go(-1);" v:slot="back-button"/>
-        <q-toolbar-title>Achievements</q-toolbar-title>
+        <q-toolbar-title>Word edit</q-toolbar-title>
         <q-btn flat icon="check" :disabled="!isChanged" color="positive" @click="saveChanges()"/>
     </q-app-header>
     <q-page class="bg-white q-pa-sm">
@@ -15,25 +15,23 @@
         <q-separator />
         <q-card-section>
           <div class="text-h6">Lemmas:</div>
-          <q-list>
-            <q-item v-for="(lemma, lemmaIndex) in lemmas" :key="lemmaIndex" clickable v-ripple>
-              <q-item-section>
-                <q-item-label>{{lemma.lemma}}</q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-          <q-btn icon="add" @click="addLemmaModal = true">
-            New lemma
-          </q-btn>
+          <div class="q-gutter-xs">
+            <q-chip v-for="(lemma, lemmaIndex) in lemmas" removable @remove="unlinkLemma(lemma.id)" color="primary" text-color="white">
+              <b>{{lemma.lemma}}</b>
+            </q-chip>
+            <q-chip clickable @click="addLemmaModal = true" color="orange" text-color="white" icon="add">
+              <b>Add lemma</b>
+            </q-chip>
+          </div>
         </q-card-section>
         <q-separator />
       </q-card>
-      <q-card class="q-my-sm">
+      <q-card class="q-my-sm" v-if="sentences.length > 0">
         <q-card-section>
           <div class="text-h6">Examples</div>
         </q-card-section>
         <q-card-section class="q-pa-none">
-          <q-list >
+          <q-list>
             <q-item v-for="(sentence, sentenceIndex) in sentences" :key="sentenceIndex">
                 <q-item-section>
                   <div v-html="sentence.sentence"></div>
@@ -43,7 +41,7 @@
         </q-card-section>
       </q-card>
       <q-dialog v-model="addLemmaModal">
-        <LemmaSelector :word="word"  @onChange="onLemmaChange"/>
+        <LemmaSelector :word="word"  :lemmas="lemmas" @onChange="onLemmaChange"/>
       </q-dialog>
     </q-page>
   </q-page-wrapper>
@@ -116,6 +114,15 @@ const linkLemmas = async function (lemma) {
     return
   }
 }
+const unlinkLemma = async function (lemma_id) {
+  const unlinkLemmasResponse = await api.word.unlinkLemma({ lemma_id: lemma_id, word_id: route.params.word_id })
+  if (unlinkLemmasResponse.error) {
+    error.value = unlinkLemmasResponse
+    return
+  }
+  getLemmas()
+}
+
 
 const onLemmaChange = function (lemma) {
   lemmas.value.push(lemma)

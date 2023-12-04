@@ -34,7 +34,7 @@
       </q-list>
     </q-card-section>
     <q-card-actions align="between" class="text-primary">
-      <q-btn flat label="Delete chapter" color="negative" @click="deleteChapter()" />
+      <q-btn flat label="Delete" icon="delete_outline" color="negative" @click="deleteChapter()" />
       <q-btn flat label="Close" v-close-popup />
     </q-card-actions>
   </q-card>
