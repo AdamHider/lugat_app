@@ -9,9 +9,6 @@
           <q-btn flat color="primary" @click="loadData()">
             Reload
           </q-btn>
-          <q-btn flat color="primary" @click="feed()">
-            Reset All
-          </q-btn>
           <q-btn flat color="primary" @click="reset()" :disable="tokenRelations.length === 0 || activeGroup !== null">
             Reset
           </q-btn>
@@ -114,17 +111,12 @@ const options = [
 ]
 const data = ref({
   source: {
-    id: 0,
-    text: 'Şimdi bunı yapam', // 'Men bala ekende, qartanamnıñ küçük teneke sandıçığı olğanını hatırlayım. Şu mavı-zumrut renklerge boyalanğan qutuçıqnıñ üstü tıpqı balaban sandıqlarda kibi, dögme köşeçiklerinen yaraştırılğan edi.',
     language_id: 1
   },
   target: {
-    id: 0,
-    text: 'Я сейчас это делаю', // 'Когда я была ребенком, у моей бабушки был небольшой жестяной сундучок, выкрашенный синe-изумрудными полосками, c декоративными выпуклостями, изображающими уголки-ковки, как у больших деревянных сундуков.'
     language_id: 2
   }
 })
-const trainingAnalysis = ref({})
 const tokens = ref({})
 const tokenRelations = ref([])
 const activeGroup = ref(null)
@@ -169,13 +161,6 @@ const loadData = async function () {
 const analyze = async function () {
   await getTokens()
   await getTokenRelations()
-}
-
-const feed = async function () {
-  const resp = await api.sentence.feed({})
-  if (trainingAnalysisResponse.error) {
-    return
-  }
 }
 
 const getTokens = async function () {
