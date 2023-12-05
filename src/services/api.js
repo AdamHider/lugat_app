@@ -142,8 +142,14 @@ export class Api extends ApiService {
     saveItem: (params) => {
       return this.post('book', 'saveItem', params)
     },
-    buildItem: (params) => {
-      return this.post('book', 'buildItem', params)
+    buildStart: (params) => {
+      return this.post('book', 'buildItemStart', params)
+    },
+    buildProcess: (params) => {
+      return this.post('book', 'buildItemProcess', params)
+    },
+    buildFinish: (params) => {
+      return this.post('book', 'buildItemFinish', params)
     },
   }
   chapter = {

@@ -4,10 +4,9 @@
 }
 </style>
 <template>
-  <q-card flat class="q-pa-sm q-my-sm">
-    <q-card-actions>
-      <q-btn color="primary" icon="add" label="New book" @click="bookModal = !bookModal"></q-btn>
-      <q-input borderless dense v-model="filterSet.filter" label="Search book ..."  debounce="500">
+  <q-card flat class="q-my-sm">
+    <q-card-actions class="q-pa-none">
+      <q-input class="full-width" outlined v-model="filterSet.filter" label="Search book ..."  debounce="500">
           <template v-slot:append>
             <q-icon v-if="filterSet.filter !== ''" name="close" @click="filterSet.filter = ''" class="cursor-pointer" />
             <q-icon name="search" />
@@ -18,18 +17,21 @@
 
   <q-list bordered padding  >
     <q-infinite-scroll ref="infiniteScroll" @load="loadData" :offset="250">
+      <q-item clickable @click="bookModal = !bookModal">
+          <q-item-section top avatar>
+            <q-avatar color="transparent" text-color="positive" icon="add" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>New book</q-item-label>
+          </q-item-section>
+      </q-item>
         <q-item v-for="(book, bookIndex) in books" :key="bookIndex" clickable v-ripple :to="`/book-${book.id}`">
           <q-item-section top avatar>
-            <q-avatar color="primary" text-color="white"  icon="book" />
+            <q-avatar :color="(book.is_built) ? `positive` : `primary`" text-color="white" icon="book" />
           </q-item-section>
-
           <q-item-section>
             <q-item-label>{{book.title}}</q-item-label>
             <q-item-label caption>{{book.author}}</q-item-label>
-          </q-item-section>
-
-          <q-item-section side top>
-            <q-item-label caption>meta</q-item-label>
           </q-item-section>
         </q-item>
     </q-infinite-scroll>

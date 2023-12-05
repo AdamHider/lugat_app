@@ -52,13 +52,16 @@
         </q-card-section>
         <q-separator />
         <q-card-actions align="right">
-          <q-btn v-if="!formData.is_built" flat color="primary" label="Build"  icon="hardware" @click="build()" />
+          <q-btn v-if="!formData.is_built" flat color="primary" label="Build"  icon="hardware" @click="bookBuildModal = true" />
           <q-btn v-else flat color="positive" label="Built" icon="check" disabled/>
           <q-btn  color="primary" icon="save" label="Save" @click="save()" />
         </q-card-actions>
       </q-card>
       <q-dialog v-model="chapterModal" v-if="!formData.is_built">
         <chapter-modal :chapter="activeChapter" @onUpdated="loadData" />
+      </q-dialog>
+      <q-dialog v-model="bookBuildModal" v-if="!formData.is_built">
+        <book-build-modal :bookId="formData.id" @onUpdated="loadData" />
       </q-dialog>
     </q-page>
   </q-page-wrapper>
@@ -68,13 +71,14 @@
 import { api } from '../services/index'
 import { ref, watch, onMounted, onActivated, reactive } from 'vue'
 import { useNotification } from '../composables/useNotification'
-import { useQuasar } from 'quasar'
 import { useRoute } from 'vue-router'
 import ChapterModal from '../components/ChapterModal.vue'
+import BookBuildModal from '../components/BookBuildModal.vue'
 
 const { error, warning, success } = useNotification()
 const route = useRoute()
 const chapterModal = ref(false)
+const bookBuildModal = ref(false)
 const activeChapter = ref(null)
 
 const formData = reactive({
@@ -86,9 +90,9 @@ const formData = reactive({
 const chapters = ref([])
 
 const loadData = async function () {
+  bookBuildModal.value = false
   const bookItemResponse = await api.book.getItem({ book_id: route.params.book_id })
   if (bookItemResponse.error) {
-    error.value = bookItemResponse
     return []
   }
   formData.id = bookItemResponse.id
@@ -115,16 +119,6 @@ const save = async function () {
   }
   return loadData()
 }
-const build = async function () {
-  if(true) return error('Empty sources')
-  if(formData.is_built) return
-  const bookBuildResponse = await api.book.buildItem({id: formData.id})
-  if (bookBuildResponse.error) {
-    bookBuildResponse.value = []
-  }
-  return loadData()
-}
-
 const addChapter = async function (number) {
   if(formData.is_built) return
   const chapterAddResponse = await api.chapter.createItem({ book_id: route.params.book_id, number })
