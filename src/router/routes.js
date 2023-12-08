@@ -4,6 +4,7 @@ const routes = [
   {
     path: '/',
     component: MainLayout,
+    redirect: 'translation',
     children: [
       {
         path: 'training',
@@ -11,9 +12,14 @@ const routes = [
         meta: { pageTitle: 'Training', bottomBarEnabled: true }
       },
       {
-        path: 'prediction',
-        component: () => import('pages/PredictionPage.vue'),
-        meta: { pageTitle: 'Prediction', bottomBarEnabled: true }
+        path: 'translation',
+        component: () => import('pages/TranslationPage.vue'),
+        meta: { pageTitle: 'Translation', bottomBarEnabled: true, lastPath: '' }
+      },
+      {
+        path: 'translation/:source_language-:target_language/:word',
+        component: () => import('pages/TranslationPage.vue'),
+        meta: { pageTitle: 'Translation', bottomBarEnabled: true }
       },
       {
         path: 'books',
