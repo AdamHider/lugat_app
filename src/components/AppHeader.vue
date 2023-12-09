@@ -54,6 +54,7 @@ onActivated(() => {
   header.value.$el.classList.remove("header-reveal");
 });
 </script>
+
 <style scoped>
 .q-app-header {
   transition: 0.2s ease;

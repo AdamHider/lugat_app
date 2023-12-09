@@ -1,5 +1,4 @@
 <template>
-  <AppBackgroundBubles/>
   <q-layout view="hHh Lpr lff"  class="shadow-2 rounded-borders">
     <router-view v-slot="{ Component, route }">
       <transition :name="`page-${route.meta.transition}`">
@@ -19,8 +18,6 @@
 import { ref, watch, provide } from 'vue'
 import { useRoute } from 'vue-router'
 import AppBottomBar from '../components/AppBottomBar.vue'
-import AppBackgroundStars from '../components/AppBackgroundStars.vue'
-import AppBackgroundBubles from '../components/AppBackgroundBubles.vue'
 
 
 const route = useRoute()

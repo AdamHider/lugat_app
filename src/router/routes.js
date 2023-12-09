@@ -13,8 +13,8 @@ const routes = [
       },
       {
         path: 'translation',
-        component: () => import('pages/TranslationPage.vue'),
-        meta: { pageTitle: 'Translation', bottomBarEnabled: true, lastPath: '' }
+        component: () => import('pages/TranslationHomePage.vue'),
+        meta: { pageTitle: 'Translation', bottomBarEnabled: true }
       },
       {
         path: 'translation/:source_language-:target_language/:word',
@@ -53,7 +53,7 @@ const routes = [
   // but you can also remove it
   {
     path: '/:catchAll(.*)*',
-    component: () => import('pages/ErrorNotFound.vue')
+    redirect: '/translation'
   }
 ]
 

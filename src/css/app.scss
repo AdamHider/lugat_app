@@ -1,1 +1,34 @@
 // app global css in SCSS form
+
+.rounded-sm{
+  border-radius: $small-border-radius;
+}
+.rounded-md{
+  border-radius: $generic-border-radius;
+}
+.rounded-md-important{
+  border-radius: $generic-border-radius !important;
+}
+
+$generic-border-radius : 20px;
+$small-border-radius : 10px;
+$huge-border-radius : 20px;
+$button-border-radius  : 12px;
+
+a{
+  text-decoration: none;
+  color: $primary;
+}
+
+.border-sm{
+  border-width: 1px;
+  border-style: solid;
+}
+.border-md{
+  border-width: 2px;
+  border-style: solid;
+}
+.border-lg{
+  border-width: 3px;
+  border-style: solid;
+}
