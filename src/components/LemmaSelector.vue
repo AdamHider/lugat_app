@@ -105,7 +105,6 @@ const filterPredictions = function (predictions) {
 }
 
 
-
 const addLemma = async function (lemma) {
   const lemmaAddResponse = await api.lemma.saveItem({ lemma: lemma, language_id: word.value.language_id })
   if (lemmaAddResponse.error) {

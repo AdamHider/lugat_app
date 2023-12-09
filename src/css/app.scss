@@ -32,3 +32,19 @@ a{
   border-width: 3px;
   border-style: solid;
 }
+.flex-item-1{
+  flex: 1;
+}
+.flex-item-0-5{
+  flex: 0.5;
+}
+.flex-item-0{
+  flex: 0;
+}
+
+.transition-1s{
+  transition: 1s ease;
+}
+.transition-0-5s{
+  transition: 0.5s ease;
+}

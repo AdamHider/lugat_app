@@ -2,7 +2,7 @@ import { reactive } from 'vue'
 
 const routes = reactive({
   translation: '/translation',
-  training: '/trainisng',
+  training: '/training',
   words: '/words',
   books: '/books'
 })

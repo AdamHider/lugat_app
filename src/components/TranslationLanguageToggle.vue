@@ -1,111 +1,102 @@
-<template  withBackground="true">
+<template withBackground="true">
   <q-chip
     class="transparent no-shadow"
-    style="color: inherit"
+    style="color: white"
     clickable
     @click="dialog = true"
   >
-    <div class="ellipsis" style="max-width: 100px">
-      <b>{{ data.source_language_id }}  {{ data.target_language_id }}</b>
+    <div >
+      <b>{{ languagePair }}</b>
     </div>
     <q-icon name="expand_more" size="sm"></q-icon>
   </q-chip>
   <q-dialog v-model="dialog" position="bottom" allow-focus-outside>
     <q-card>
       <q-card-section>
-        <div class="text-h6">Choose course</div>
+        <div class="text-h6">Choose languages</div>
       </q-card-section>
-      <q-card-section class="q-pt-none q-px-none" horizontal>
-        <q-card-section class="full-width">
-          <q-select
-            v-model="data.source_language_id"
-            :options="languages"
-            emit-value
-            map-options
-            option-value="id"
-            option-label="title"
-            option-disable="inactive"
-            label="From"
-            bg-color="white"
-            standout
-            outlined
-          />
-        </q-card-section>
-        <q-card-section class="full-width">
-          <q-select
-            v-model="data.target_language_id"
-            :options="targetLanguages"
-            emit-value
-            map-options
-            option-value="id"
-            option-label="title"
-            option-disable="inactive"
-            label="To"
-            bg-color="white"
-            standout
-            outlined
-          />
-        </q-card-section>
+      <q-card-section class="q-pt-none full-width">
+        <div class="row justify-between items-center">
+          <div class="col-5">
+            <q-select
+              v-model="data.source_language_id"
+              :options="languages"
+              emit-value
+              map-options
+              option-value="id"
+              option-label="title"
+              option-disable="inactive"
+              outlined
+            />
+          </div>
+          <div class="col-2 text-center">
+            <q-btn round unelevated color="primary"  icon="sync_alt" @click="data.source_language_id = data.target_language_id"/>
+          </div>
+          <div class="col-5">
+            <q-select
+              v-model="data.target_language_id"
+              :options="targetLanguages"
+              emit-value
+              map-options
+              option-value="id"
+              option-label="title"
+              option-disable="inactive"
+              standout
+              outlined
+            />
+          </div>
+        </div>
       </q-card-section>
     </q-card>
   </q-dialog>
 </template>
 
 <script setup>
-import { watch, ref, onActivated, reactive } from "vue";
+import { watch, ref, onActivated, reactive, computed, toRefs} from "vue";
+import { useLanguage } from '../composables/useLanguage'
 
-const emit = defineEmits(["update:dialogOpened"]);
+const { languages, getLanguage } = useLanguage()
+
+const emit = defineEmits(["update:dialogOpened", "onChange"]);
 
 const props = defineProps({
   dialogOpened: Boolean,
-  sourceLang: Number,
-  targetLang: Number,
+  source_language_id: Number,
+  target_language_id: Number,
 });
 
 const data = reactive({
   source_language_id: 1,
-  target_language_id: 2,
-});
+  target_language_id: 2
+})
 
-const languages = [
-  {
-    title: 'qirimtatar',
-    id: 1
-  },
-  {
-    title: 'russian',
-    id: 2
-  }
-]
-const targetLanguages = ref([])
+const languagePair = computed(() => {
+  return `${getLanguage(data.source_language_id, 'id').title} - ${getLanguage(data.target_language_id, 'id').title}`
+})
+const targetLanguages = computed(() => {
+  return languages.filter(language => language.id != data.source_language_id)
+})
 
 const dialog = ref(false);
 if (props.dialogOpened) dialog.value = true;
 
-
-const targetLangsRecalc = function(){
-  targetLanguages.value = []
-  for(var i in languages){
-    if(data.source_language_id == languages[i].id) continue
-    targetLanguages.value.push(languages[[i]])
-  }
-}
 watch(() => data.source_language_id, async (currentValue, oldValue) => {
   if(currentValue == data.target_language_id){
     data.target_language_id = oldValue
   }
 })
-const select = () => {
-  dialog.value = false;
-};
 
-onActivated(() => {
-  targetLangsRecalc()
-})
 watch(props, () => {
   if (props.dialogOpened) dialog.value = true;
+  if(props.source_language_id) data.source_language_id = props.source_language_id
+  if(props.target_language_id) data.target_language_id = props.target_language_id
 });
-watch(dialog, () => {
+
+watch(data, (currentValue, oldValue) => {
+  emit("onChange", currentValue);
+});
+
+watch(dialog, (currentValue, oldValue) => {
   emit("update:dialogOpened", dialog);
 });
 </script>

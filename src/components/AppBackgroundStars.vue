@@ -51,6 +51,56 @@
   <div class="star"></div>
   <div class="star"></div>
   <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
 </div>
 </div>
 </template>
@@ -76,6 +126,8 @@
   /*background: radial-gradient(ellipse at bottom, #2ca85c 0%, #0c4f39 100%);*/
   background: radial-gradient(ellipse at bottom, #49c88c 0%, #0c4235 100%);
   overflow: hidden;
+  background-position: center center;
+	animation: gradient 8s ease infinite;
 }
 
 @function random_range($min, $max) {
@@ -87,13 +139,13 @@
 .stars {
   position: fixed;
   top: 0;
-  right: 0;
-  width: 100%;
+  left: 0;
+  width: 120%;
   height: 120%;
 }
 
 .star {
-  $star-count: 50;
+  $star-count: 100;
   --star-color: #97f7c1;
   --star-tail-length: 6em;
   --star-tail-height: 2px;
@@ -104,6 +156,7 @@
   position: absolute;
   top: var(--top-offset);
   left: var(--left-offset);
+  opacity: var(--opacity);
   transform: rotateZ(45deg);
   filter: drop-shadow(0 0 6px #97f7c1);
   animation: fall var(--fall-duration) var(--fall-delay) linear infinite;
@@ -116,10 +169,16 @@
   @for $i from 1 through $star-count {
     &:nth-child(#{$i}) {
       --star-tail-length: #{random_range(5em, 7.5em)};
+      /*
       --top-offset: #{random_range(110vh, 95vh)};
       --left-offset: #{random_range(-50vw, 150vw)};
+      */
+      --top-offset: #{random_range(-50vh, 150vh)};
+      --left-offset: #{random_range(125vw, 110vw)};
+
       --fall-duration: #{random_range(6s, 12s)};
       --fall-delay: #{random_range(0s, 10s)};
+      --opacity: #{random_range(.4, 1)};
     }
   }
 
@@ -164,11 +223,21 @@
     opacity: 0;
   }
 }
-
 @keyframes blink {
   50% {
     opacity: 0.6;
   }
+}
+@keyframes gradient {
+	0% {
+		background-size: 100%;
+	}
+	50% {
+		background-size: 250%;
+	}
+	100% {
+		background-size: 100%;
+	}
 }
 
 </style>
