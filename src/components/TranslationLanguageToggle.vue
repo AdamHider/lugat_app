@@ -17,7 +17,7 @@
       </q-card-section>
       <q-card-section class="q-pt-none full-width">
         <div class="row justify-between items-center">
-          <div class="col-5">
+          <div class="col-5 ">
             <q-select
               v-model="data.source_language_id"
               :options="languages"
@@ -27,7 +27,25 @@
               option-label="title"
               option-disable="inactive"
               outlined
-            />
+            >
+            <template v-slot:prepend>
+              <q-avatar rounded >
+                <img :src="getLanguage(data.source_language_id, 'id').flag">
+              </q-avatar>
+            </template>
+            <template v-slot:option="scope">
+              <q-item v-bind="scope.itemProps">
+                <q-item-section avatar>
+                  <q-avatar  size="md">
+                    <img :src="scope.opt.flag">
+                  </q-avatar>
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>{{ scope.opt.title }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </template>
+            </q-select>
           </div>
           <div class="col-2 text-center">
             <q-btn round unelevated color="primary"  icon="sync_alt" @click="data.source_language_id = data.target_language_id"/>
@@ -43,7 +61,25 @@
               option-disable="inactive"
               standout
               outlined
-            />
+            >
+              <template v-slot:prepend>
+                <q-avatar rounded >
+                  <img :src="getLanguage(data.target_language_id, 'id').flag">
+                </q-avatar>
+              </template>
+              <template v-slot:option="scope">
+                <q-item v-bind="scope.itemProps">
+                  <q-item-section avatar>
+                    <q-avatar  size="md">
+                      <img :src="scope.opt.flag">
+                    </q-avatar>
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>{{ scope.opt.title }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
           </div>
         </div>
       </q-card-section>
@@ -61,20 +97,20 @@ const emit = defineEmits(["update:dialogOpened", "onChange"]);
 
 const props = defineProps({
   dialogOpened: Boolean,
-  source_language_id: Number,
-  target_language_id: Number,
+  source_language_id: String,
+  target_language_id: String,
 });
 
 const data = reactive({
-  source_language_id: 1,
-  target_language_id: 2
+  source_language_id: "1",
+  target_language_id: "2"
 })
 
 const languagePair = computed(() => {
-  return `${getLanguage(data.source_language_id, 'id').title} - ${getLanguage(data.target_language_id, 'id').title}`
+  return `${getLanguage(data.source_language_id, 'id')?.title} - ${getLanguage(data.target_language_id, 'id')?.title}`
 })
 const targetLanguages = computed(() => {
-  return languages.filter(language => language.id != data.source_language_id)
+  return languages.value.filter(language => language.id != data.source_language_id)
 })
 
 const dialog = ref(false);

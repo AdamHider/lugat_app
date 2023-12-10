@@ -3,9 +3,11 @@
 </template>
 
 <script>
-import { defineComponent } from 'vue'
+import { useLanguage } from './composables/useLanguage'
 
-export default defineComponent({
-  name: 'App'
-})
+const { loadLanguages } = useLanguage()
+async function init () {
+  loadLanguages()
+}
+init()
 </script>

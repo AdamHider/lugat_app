@@ -5,24 +5,34 @@
       <TranslationLanguageToggle :source_language_id="data.source_language_id" :target_language_id="data.target_language_id" @onChange="onLanguageChange"/>
     </q-app-header>
     <q-page class="q-pa-sm row column  content-around justify-end" style="transition: all 2s ease">
-    <q-card v-if="isFocused && lemmaOptions.length>0" class="q-ma-md">
-      <q-card-section  class="full-width">
-        <q-list>
-          <q-item clickable v-for="(lemmaPrediction, lemmaPredictionIndex) in lemmaOptions" :key="lemmaPredictionIndex">
+    <q-card v-if="isFocused && lemmaOptions.length>0" class="q-ma-sm">
+      <q-card-section class="full-width">
+        <q-list >
+          <q-item v-ripple clickable v-for="(lemmaPrediction, lemmaPredictionIndex) in lemmaOptions" :key="lemmaPredictionIndex">
+            <q-item-section top avatar>
+              <q-avatar color="primary" text-color="white" icon="bluetooth" />
+            </q-item-section>
+
             <q-item-section>
-              <q-item-label caption>Lemma</q-item-label>
               <q-item-label>{{ lemmaPrediction.lemma }}</q-item-label>
+            </q-item-section>
+
+            <q-item-section side top>
+              <q-item-label caption>5 min ago</q-item-label>
+              <q-icon name="star" color="yellow" />
             </q-item-section>
           </q-item>
         </q-list>
       </q-card-section>
     </q-card>
-      <q-card flat bordered :class="`full-width q-my-sm bg-transparent no-border ${(isFocused) ? 'flex-item-0' : 'flex-item-0-5'} transition-0-5s`">
-          <q-card-section v-if="!isFocused" align="center" class="q-pa-none">
-            <div class="text-h5 text-white"><b>Explore the Dictionary</b></div>
-            <div class="text-caption text-white"><b>The everything and get the answer!</b></div>
-          </q-card-section>
-          <q-card-section class="full-width">
+    <q-card v-else flat class="bg-transparent no-border q-ma-sm">
+      <q-card-section align="center">
+        <div class="text-h5 text-white"><b>Explore the Dictionary</b></div>
+        <div class="text-caption text-white"><b>The everything and get the answer!</b></div>
+      </q-card-section>
+    </q-card>
+      <q-card flat :class="`full-width q-my-sm bg-transparent no-border ${(isFocused) ? 'flex-item-0' : 'flex-item-0-5'} transition-0-5s`">
+          <q-card-section class="full-width q-pa-sm">
             <q-input
               v-model="data.token"
               dark
@@ -63,8 +73,8 @@ const isFocused = ref(false)
 
 const data = reactive({
   token: '',
-  source_language_id: 2,
-  target_language_id: 1
+  source_language_id: "2",
+  target_language_id: "1"
 })
 const lemmaOptions = ref([])
 const onLanguageChange = function(languages){
@@ -73,16 +83,17 @@ const onLanguageChange = function(languages){
 }
 
 const searchLink = computed(() => {
-  return `/translation/${getLanguage(data.source_language_id, 'id').title}-${getLanguage(data.target_language_id, 'id').title}/${data.token}`
+  return `/translation/${getLanguage(data.source_language_id, 'id')?.title}-${getLanguage(data.target_language_id, 'id')?.title}/${data.token}`
 })
 
 const autocomplete = async function(val) {
-    const lemmaListResponse = await api.lemma.autocomplete({ filter: { lemma: val }, limit: 7, offset: 0})
-    if (lemmaListResponse.error) {
-      lemmaOptions.value = []
-    } else {
-      lemmaOptions.value = lemmaListResponse
-    }
+  if(val == '') return lemmaOptions.value = []
+  const lemmaListResponse = await api.lemma.autocomplete({ filter: { lemma: val }, limit: 7, offset: 0})
+  if (lemmaListResponse.error) {
+    lemmaOptions.value = []
+  } else {
+    lemmaOptions.value = lemmaListResponse
+  }
 }
 
 </script>

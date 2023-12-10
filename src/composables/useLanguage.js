@@ -1,20 +1,23 @@
-const languages = [
-  {
-    title: 'Qirimtatar',
-    id: 1
-  },
-  {
-    title: 'Russian',
-    id: 2
-  }
-]
+import { ref } from 'vue'
+import { api } from '../services/index'
+
+const languages = ref([])
 
 export function useLanguage () {
   function getLanguage (value, key) {
-    return languages.find(language => language[key] == value)
+    return languages.value.find(language => language[key] == value)
+  }
+  async function loadLanguages() {
+    const languageListResponse = await api.language.getList({})
+    if (languageListResponse.error) {
+      languages.value = []
+    } else {
+      languages.value = languageListResponse
+    }
   }
   return {
     getLanguage,
+    loadLanguages,
     languages
   }
 }

@@ -92,7 +92,7 @@ const {intensive: intensive} = toRef(props)
   left: 0;
   width: 100%;
   height: 100%;
-  transition: all 1s ease;
+  transition: all 0.5s ease;
 }
 .background .background-overlay.intense{
   background: radial-gradient(ellipse at bottom, #11cc65  0%,  #058b73 100%);

@@ -48,20 +48,6 @@ export class ApiService {
 
 
 export class Api extends ApiService {
-  translator = {
-    analyze: (params) => {
-      return this.post('translator', 'analyze', params)
-    },
-    train: (params) => {
-      return this.post('translator', 'train', params)
-    },
-    predict: (params) => {
-      return this.post('translator', 'predict', params)
-    },
-    getTranslations: (params) => {
-      return this.post('translator', 'getTranslations', params)
-    },
-  }
   sentence = {
     getPair: (params) => {
       return this.post('sentence', 'getPair', params)
@@ -189,7 +175,11 @@ export class Api extends ApiService {
       return this.post('form', 'createItemFromLemma', params)
     }
   }
-
+  language = {
+    getList: (params) => {
+      return this.post('language', 'getList', params)
+    }
+  }
   uploader = {
     upload: (params) => {
       return this.post('uploader', 'uploadItem', params)

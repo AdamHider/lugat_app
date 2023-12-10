@@ -319,6 +319,10 @@ const countTokens = function () {
 }
 
 
+onMounted(async () => {
+  // get initial data from server (1st page)
+  await loadData()
+})
 
 
 watch(() => tokenRelations.value, async (currentValue, oldValue) => {
@@ -330,10 +334,6 @@ watch(() => data.value.source.language_id, async (currentValue, oldValue) => {
   if (data.value.source.language_id === data.value.target.language_id) {
     data.value.target.language_id = oldValue
   }
-})
-onMounted(async () => {
-  // get initial data from server (1st page)
-  await loadData()
 })
 
 </script>
