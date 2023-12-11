@@ -1,15 +1,13 @@
 <template withBackground="true">
-  <q-chip
-    class="transparent no-shadow"
-    style="color: white"
-    clickable
-    @click="dialog = true"
-  >
-    <div >
-      <b>{{ languagePair }}</b>
-    </div>
-    <q-icon name="expand_more" size="sm"></q-icon>
-  </q-chip>
+  <div class="q-gutter-xs cursor-pointer text-white" @click="dialog = true">
+    <q-avatar rounded size="md">
+      <img :src="sourceLanguage.flag">
+    </q-avatar>
+    <q-avatar rounded size="md">
+      <img :src="targetLanguage.flag">
+    </q-avatar>
+    <q-icon color="white" name="expand_more" size="sm"></q-icon>
+  </div>
   <q-dialog v-model="dialog" position="bottom" allow-focus-outside>
     <q-card>
       <q-card-section>
@@ -26,11 +24,12 @@
               option-value="id"
               option-label="title"
               option-disable="inactive"
+              hide-dropdown-icon
               outlined
             >
             <template v-slot:prepend>
               <q-avatar rounded >
-                <img :src="getLanguage(data.source_language_id, 'id').flag">
+                <img :src="sourceLanguage.flag">
               </q-avatar>
             </template>
             <template v-slot:option="scope">
@@ -59,12 +58,12 @@
               option-value="id"
               option-label="title"
               option-disable="inactive"
-              standout
+              hide-dropdown-icon
               outlined
             >
               <template v-slot:prepend>
                 <q-avatar rounded >
-                  <img :src="getLanguage(data.target_language_id, 'id').flag">
+                  <img :src="targetLanguage.flag">
                 </q-avatar>
               </template>
               <template v-slot:option="scope">
@@ -106,8 +105,11 @@ const data = reactive({
   target_language_id: "2"
 })
 
-const languagePair = computed(() => {
-  return `${getLanguage(data.source_language_id, 'id')?.title} - ${getLanguage(data.target_language_id, 'id')?.title}`
+const sourceLanguage = computed(() => {
+  return getLanguage(data.source_language_id, 'id')
+})
+const targetLanguage = computed(() => {
+  return getLanguage(data.target_language_id, 'id')
 })
 const targetLanguages = computed(() => {
   return languages.value.filter(language => language.id != data.source_language_id)

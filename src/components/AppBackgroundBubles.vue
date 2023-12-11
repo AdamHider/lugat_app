@@ -77,7 +77,7 @@ const {intensive: intensive} = toRef(props)
   transition: all 1s ease;
   /*background: radial-gradient(ellipse at bottom, #01b27b 0%,  #006955 100%);*/
  /*background: radial-gradient(ellipse at bottom, #0d9167 0%,  #024438 100%);*/
- background: radial-gradient(ellipse at bottom, #13c460 0%, #045e73 100%);
+ background: radial-gradient(ellipse at top, #13c460 0%, #045e73 80%, #0b1c20 100%);
 
 
 	background-size: 200% 200%;
@@ -95,7 +95,7 @@ const {intensive: intensive} = toRef(props)
   transition: all 0.5s ease;
 }
 .background .background-overlay.intense{
-  background: radial-gradient(ellipse at bottom, #11cc65  0%,  #058b73 100%);
+  background: radial-gradient(ellipse at top, #11cc65  0%,  #058b73 100%);
 	background-size: 200% 200%;
 	animation: gradient 8s ease infinite;
 }

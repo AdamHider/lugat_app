@@ -94,6 +94,9 @@ export class Api extends ApiService {
     getTranslations: (params) => {
       return this.post('word', 'getTranslations', params)
     },
+    autocomplete: (params) => {
+      return this.post('word', 'autocomplete', params)
+    },
     saveItem: (params) => {
       return this.post('word', 'saveItem', params)
     },
