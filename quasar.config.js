@@ -30,7 +30,8 @@ module.exports = configure(function (/* ctx */) {
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
     css: [
-      'app.scss'
+      'app.scss',
+      'font.scss'
     ],
 
     // https://github.com/quasarframework/quasar/tree/dev/extras
@@ -116,9 +117,9 @@ module.exports = configure(function (/* ctx */) {
       ]
     },
 
-    // animations: 'all', // --- includes all animations
+    animations: 'all', // --- includes all animations
     // https://v2.quasar.dev/options/animations
-    animations: [],
+    //animations: [],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#property-sourcefiles
     // sourceFiles: {

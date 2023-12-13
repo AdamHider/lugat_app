@@ -1,86 +1,42 @@
 <template withBackground="true">
-  <div class="q-gutter-xs cursor-pointer text-white" @click="dialog = true">
-    <q-avatar rounded size="md">
-      <img :src="sourceLanguage.flag">
-    </q-avatar>
-    <q-avatar rounded size="md">
-      <img :src="targetLanguage.flag">
-    </q-avatar>
-    <q-icon color="white" name="expand_more" size="sm"></q-icon>
+  <div class="q-gutter-xs cursor-pointer">
+    <div class="row justify-between items-center">
+      <div class="col-5">
+        <q-chip :class="`bg-transparent ${(props.transparent) ? 'text-white' : ''} no-shadow`" clickable @click="currentLanguage=sourceLanguage;dialog=true"><b>{{ sourceLanguage?.title }}</b></q-chip>
+      </div>
+      <div class="col-2 text-center">
+        <q-btn round flat unelevated :color="(props.transparent) ? 'white' : ''"  icon="sync_alt" @click="data.source_language_id = data.target_language_id"/>
+      </div>
+      <div class="col-5">
+      <div class="col-5 ">
+        <q-chip  :class="`bg-transparent ${(props.transparent) ? 'text-white' : ''} no-shadow`" clickable @click="currentLanguage=targetLanguage;dialog=true"><b>{{ targetLanguage?.title }}</b></q-chip>
+      </div>
+      </div>
+    </div>
   </div>
   <q-dialog v-model="dialog" position="bottom" allow-focus-outside>
     <q-card>
       <q-card-section>
-        <div class="text-h6">Choose languages</div>
+        <div class="text-h6" v-if="sourceLanguage.id == currentLanguage.id">Source language</div>
+        <div class="text-h6" v-else>Target language</div>
       </q-card-section>
       <q-card-section class="q-pt-none full-width">
-        <div class="row justify-between items-center">
-          <div class="col-5 ">
-            <q-select
-              v-model="data.source_language_id"
-              :options="languages"
-              emit-value
-              map-options
-              option-value="id"
-              option-label="title"
-              option-disable="inactive"
-              hide-dropdown-icon
-              outlined
-            >
-            <template v-slot:prepend>
-              <q-avatar rounded >
-                <img :src="sourceLanguage.flag">
+        <q-list>
+          <q-item v-for="(language, languageIndex) in languages" :key="languageIndex" clickable :disable="language.id == currentLanguage.id"
+          @click="dialog = false; ((sourceLanguage.id == currentLanguage.id) ? data.source_language_id = language.id : data.target_language_id = language.id); ">
+            <q-item-section avatar>
+              <q-avatar  size="md">
+                <img :src="language.flag">
               </q-avatar>
-            </template>
-            <template v-slot:option="scope">
-              <q-item v-bind="scope.itemProps">
-                <q-item-section avatar>
-                  <q-avatar  size="md">
-                    <img :src="scope.opt.flag">
-                  </q-avatar>
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label>{{ scope.opt.title }}</q-item-label>
-                </q-item-section>
-              </q-item>
-            </template>
-            </q-select>
-          </div>
-          <div class="col-2 text-center">
-            <q-btn round unelevated color="primary"  icon="sync_alt" @click="data.source_language_id = data.target_language_id"/>
-          </div>
-          <div class="col-5">
-            <q-select
-              v-model="data.target_language_id"
-              :options="targetLanguages"
-              emit-value
-              map-options
-              option-value="id"
-              option-label="title"
-              option-disable="inactive"
-              hide-dropdown-icon
-              outlined
-            >
-              <template v-slot:prepend>
-                <q-avatar rounded >
-                  <img :src="targetLanguage.flag">
-                </q-avatar>
-              </template>
-              <template v-slot:option="scope">
-                <q-item v-bind="scope.itemProps">
-                  <q-item-section avatar>
-                    <q-avatar  size="md">
-                      <img :src="scope.opt.flag">
-                    </q-avatar>
-                  </q-item-section>
-                  <q-item-section>
-                    <q-item-label>{{ scope.opt.title }}</q-item-label>
-                  </q-item-section>
-                </q-item>
-              </template>
-            </q-select>
-          </div>
-        </div>
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>{{ language.title }}</q-item-label>
+            </q-item-section>
+            <q-item-section avatar>
+              <q-icon v-if="language.id == currentLanguage.id" color="positive" text-color="white" name="check" />
+            </q-item-section>
+          </q-item>
+        </q-list>
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -95,10 +51,13 @@ const { languages, getLanguage } = useLanguage()
 const emit = defineEmits(["update:dialogOpened", "onChange"]);
 
 const props = defineProps({
+  transparent: Boolean,
   dialogOpened: Boolean,
   source_language_id: String,
   target_language_id: String,
 });
+
+const currentLanguage = ref({})
 
 const data = reactive({
   source_language_id: "1",
@@ -116,11 +75,17 @@ const targetLanguages = computed(() => {
 })
 
 const dialog = ref(false);
+
 if (props.dialogOpened) dialog.value = true;
 
 watch(() => data.source_language_id, async (currentValue, oldValue) => {
   if(currentValue == data.target_language_id){
     data.target_language_id = oldValue
+  }
+})
+watch(() => data.target_language_id, async (currentValue, oldValue) => {
+  if(currentValue == data.source_language_id){
+    data.source_language_id = oldValue
   }
 })
 

@@ -17,7 +17,7 @@ const routes = [
         meta: { pageTitle: 'Translation', bottomBarEnabled: true }
       },
       {
-        path: 'translation/:source_language-:target_language/:word',
+        path: 'translation/q=:word&sl=:source_language_id&tl=:target_language_id',
         component: () => import('pages/TranslationPage.vue'),
         meta: { pageTitle: 'Translation', bottomBarEnabled: true }
       },

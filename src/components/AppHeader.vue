@@ -6,7 +6,7 @@
     expand
     position="top"
   >
-    <q-toolbar>
+    <q-toolbar :class="`${(centered) ? 'justify-center' : ''}`">
       <slot name="back-button"></slot>
       <slot />
     </q-toolbar>
@@ -20,6 +20,7 @@ import { useRoute } from "vue-router";
 const route = useRoute();
 const props = defineProps({
   reveal: Boolean,
+  centered: Boolean,
   class: String,
 });
 const header = ref(null);

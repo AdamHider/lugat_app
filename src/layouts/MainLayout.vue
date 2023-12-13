@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="hHh Lpr lff"  class="shadow-2 rounded-borders">
+  <q-layout view="hHh Lpr lff">
     <router-view v-slot="{ Component, route }">
       <transition :name="`page-${route.meta.transition}`">
           <keep-alive :exclude="['WordPage']">

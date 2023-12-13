@@ -95,7 +95,9 @@ const {intensive: intensive} = toRef(props)
   transition: all 0.5s ease;
 }
 .background .background-overlay.intense{
-  background: radial-gradient(ellipse at top, #11cc65  0%,  #058b73 100%);
+  /*background: radial-gradient(ellipse at top, #11cc65  0%,  #058b73 100%);*/
+  /*background: radial-gradient(ellipse at top, #45d262 0%, #01885c 40%, #000 100%);*/
+  //background: #0000007a;
 	background-size: 200% 200%;
 	animation: gradient 8s ease infinite;
 }
@@ -142,9 +144,10 @@ $amount: 40;
   }
 }
 .background.intensive .particles span{
-  color: white;
-  width: 3px;
-  height: 3px;
+  color: #00ffc3;
+  width: 4px;
+  height: 4px;
+  filter: drop-shadow(0px 0px 4px #fff);
 }
 
 @keyframes move {
