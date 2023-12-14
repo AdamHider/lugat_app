@@ -34,7 +34,12 @@
           <q-list>
             <q-item v-for="(sentence, sentenceIndex) in sentences" :key="sentenceIndex">
                 <q-item-section>
-                  <div v-html="sentence.sentence"></div>
+                    <div>
+                      <span v-for="(targetChunk, targetChunkIndex) in sentence" :key="targetChunkIndex">
+                        <b v-if="targetChunk.type == 'link'" v-html="targetChunk.text"></b>
+                        <span v-else v-html="targetChunk.text"></span>
+                      </span>
+                    </div>
                 </q-item-section>
             </q-item>
           </q-list>
@@ -82,7 +87,7 @@ const getSentences = async function () {
     sentences.value = []
     return
   }
-  sentences.value = sentenceListResponse
+  sentences.value = preprocessSentences(sentenceListResponse)
 }
 
 const getLemmas = async function () {
@@ -121,6 +126,28 @@ const unlinkLemma = async function (lemma_id) {
     return
   }
   getLemmas()
+}
+const preprocessSentences = function(sentences) {
+  var result = [];
+  for(var i in sentences){
+    var sentence = []
+    var sentenceSplitted = sentences[i].sentence.split('<::>')
+    for(var u in sentenceSplitted){
+      if(sentenceSplitted[u].indexOf('<s>') > -1){
+        sentence.push({
+          type: 'link',
+          text: sentenceSplitted[u].replace('<s>', '')
+        })
+      } else {
+        sentence.push({
+          type: 'text',
+          text: sentenceSplitted[u]
+        })
+      }
+    }
+    result.push(sentence)
+  }
+  return result
 }
 
 

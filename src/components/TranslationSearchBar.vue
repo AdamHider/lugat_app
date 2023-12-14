@@ -96,7 +96,6 @@ const submit = function () {
   emit("onSubmit", word.value);
 }
 onMounted(() => {
-  console.log(isFocused.value)
   if(isFocused.value == true) setTimeout(()=> {searchInput.value.focus()} , 0)
 })
 watch(() => isFocused.value, (currentValue, oldValue) => {

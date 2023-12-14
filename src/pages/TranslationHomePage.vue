@@ -76,7 +76,6 @@ const onLanguageChange = function(languages){
 
 watch(() => isFocused.value, (currentValue, oldValue) => {
   if(currentValue) route.meta.bottomBarEnabled = false
-  console.log(route.meta)
 })
 
 

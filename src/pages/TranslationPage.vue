@@ -5,22 +5,7 @@
     </q-app-header>
     <q-page class="q-pa-sm">
       <div class="text-h5 q-ma-sm">{{ route.params.word }}</div>
-      <q-card flat bordered class="q-my-sm"  v-if="translations.length > 0">
-          <q-card-section class="full-width">
-            <q-list>
-              <q-item  v-for="(translationGroup, translationGroupIndex) in translations" :key="translationGroupIndex">
-                  <q-item-section>
-                    <div class="row items-center">
-                      <b v-if="translations.length > 1">{{ translationGroup.source_word }}</b>
-                      <q-chip v-for="(translation, translationIndex) in translationGroup.translations" :key="translationIndex" square>
-                        {{translation.word}}
-                      </q-chip>
-                    </div>
-                  </q-item-section>
-              </q-item>
-            </q-list>
-          </q-card-section>
-      </q-card>
+      <TranslationList :source_language_id="data.source_language_id" :target_language_id="data.target_language_id"/>
       <q-card flat bordered class="q-my-sm" v-if="sentences.length> 0">
           <q-card-section class="full-width">
             <div class="text-h6">Examples of use</div>
@@ -76,7 +61,7 @@
           :target_language_id="data.target_language_id"
           :focused="isFocused"
           @onFocusChange="isFocused = $event.value"
-          @onSubmit="search"
+          @onSubmit="onSubmit"
         />
         </q-dialog>
     </q-page>
@@ -90,6 +75,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useLanguage } from '../composables/useLanguage'
 import TranslationLanguageToggle from '../components/TranslationLanguageToggle.vue'
 import TranslationSearchBar from '../components/TranslationSearchBar.vue'
+import TranslationList from '../components/TranslationList.vue'
 
 const { getLanguage } = useLanguage()
 const route = useRoute()
@@ -104,7 +90,6 @@ const data = reactive({
 
 const sentencesContainer = ref(null)
 const translationData = ref({})
-const translations = ref([])
 const sentences = ref([])
 
 const predict = async function () {
@@ -116,32 +101,13 @@ const predict = async function () {
   translationData.value = translationResponse
 }
 
+const onSubmit = function (val) {
+  router.push(`/translation/q=${val}&sl=${data.source_language_id}&tl=${data.target_language_id}`)
+}
 const search = async function(){
-  await getTranslations()
   await getSentences()
 }
 
-const getTranslations = async function () {
-  translations.value = []
-  if(!route.params.word) return
-  console.log(route.params.word)
-  const translationListResponse = await api.word.getTranslations({
-    query: route.params.word,
-    source_language_id: route.params.source_language_id,
-    target_language_id: route.params.target_language_id,
-  })
-  if (translationListResponse.error) {
-    translations.value = []
-    return
-  }
-  let groups = groupBy(translationListResponse, 'source_word')
-  for(var i in groups){
-    translations.value.push({
-      source_word: groups[i][0].source_word,
-      translations: groups[i]
-    })
-  }
-}
 const getSentences = async function () {
   if(!route.params.word) return
   const sentenceListResponse = await api.sentence.getPairList({
@@ -180,13 +146,6 @@ const preprocessSentences = function(sentences) {
     result.push(sentence)
   }
   return result
-}
-
-const groupBy = function(xs, key) {
-  return xs.reduce(function(rv, x) {
-    (rv[x[key]] = rv[x[key]] || []).push(x);
-    return rv;
-  }, {});
 }
 
 const pathRecalc = function(){
